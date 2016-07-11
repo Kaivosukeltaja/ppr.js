@@ -1,0 +1,23 @@
+{
+  "preset": "airbnb",
+  "validateIndentation": 2,
+  "requireMultipleVarDecl": true,
+  "maximumLineLength": false,
+  "requireSpacesInAnonymousFunctionExpression": false,
+  "disallowMultipleVarDecl": null,
+  "disallowMultipleLineBreaks": true,
+  "disallowTrailingComma": true,
+  "requireTrailingComma": false,
+  "disallowKeywordsOnNewLine": [ "else" ],
+  "requireLineFeedAtFileEnd": true,
+  "disallowSpaceAfterObjectKeys": true,
+  "requireDollarBeforejQueryAssignment": false,
+  "validateLineBreaks": "LF",
+  "requireCamelCaseOrUpperCaseIdentifiers": {
+    "ignoreProperties": true,
+    "static": true
+  },
+  "excludeFiles": [
+    "node_modules/**/*"
+  ]
+}

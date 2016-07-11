@@ -1,0 +1,17 @@
+temp
+dist
+target
+magnolia-modules
+.vagrant
+node_modules
+src/vendor
+styleguide
+.sass-cache
+phantomjs.log
+*.sublime-*
+npm-debug.log
+.DS_Store
+.idea
+*.iml
+coverage
+bower_components

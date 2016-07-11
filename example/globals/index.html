@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Globals example</title>
+</head>
+<body data-page-data='{"test": true}'>
+    <div class="test" data-component>
+        <div class="testing" data-component="testComponent" data-component-href="test.html" data-component-data='{"id": 123}'>AA</div>
+        <div class="testing" data-component data-component-href="test.html">BB</div>
+        <div class="testing" data-component="testComponent" data-component-href="test.html" data-component-data='{"id": 124}'>CC</div>
+        <div class="testing" data-component="testComponent" data-component-href="test.html" data-component-data='{"id": 125}'>DD</div>
+    </div>
+
+    <script src="../../bower_components/jquery/dist/jquery.min.js"></script>
+    <script src="../../bower_components/lodash/dist/lodash.min.js"></script>
+    <script src="../../dist/ppr.js"></script>
+
+    <script>
+        ppr.loadConfig('../config.json').then(function() {
+            ppr.build();
+        });
+
+        ppr.component.test_component = $.extend(true, {}, ppr.component.reloadable_prototype, {
+
+            build: function() {
+
+                this.eventBus.publish('test_module_impression', { id: this.data.id });
+            },
+
+            getRequiredModules: function() {
+                return ['test'];
+            }
+        });
+
+        ppr.module.test = $.extend(true, {}, ppr.module.base_prototype, {
+            impressions: [],
+
+            build: function() {
+                var _this = this;
+
+                this.eventBus.subscribe(this, 'page_build_finished', function() {
+                   console.log('page build finished: TEST', _this.impressions);
+                });
+
+                this.eventBus.subscribe(this, 'test_module_impression', function(data) {
+                    _this.impressions.push(data);
+                });
+            }
+        });
+    </script>
+</body>
+</html>
