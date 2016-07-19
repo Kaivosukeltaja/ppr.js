@@ -27,7 +27,10 @@ module.exports = function(config) {
       'src/**/*.js': ['browserify']
     },
     coverageReporter: {
-      dir: 'coverage/'
+      dir: 'coverage/',
+      reporters: [
+        { type: 'lcov', subdir: 'lcov' }
+      ]
     },
     browserify: {
       transform: [

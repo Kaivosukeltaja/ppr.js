@@ -14,7 +14,7 @@
   else {
     root.ppr.config = factory(root._);
   }
-})(this, function() {
+})(this, function(_) {
 
   'use strict';
 

@@ -177,36 +177,6 @@
      */
     setModuleMessages: function(messages) {
       this.messages = messages;
-    },
-
-    /**
-     * Wrapper method for ppr.library.eventBusPrototype::subscribe
-     */
-    subscribe: function() {
-
-      var parameters = Array.prototype.slice.call(arguments);
-
-      // Prefix message with component id
-      parameters[1] = this.id + '_' + parameters[1];
-
-      var subscriberId = this.eventBus.subscribe.apply(this.eventBus, parameters);
-
-      this.cacheSubscribers.push(subscriberId);
-
-      return subscriberId;
-    },
-
-    /**
-     * Wrapper method for ppr.library.eventBusPrototype::publish
-     */
-    publish: function() {
-
-      var parameters = Array.prototype.slice.call(arguments);
-
-      // Prefix message with component id
-      parameters[0] = this.id + '_' + parameters[0];
-
-      return this.eventBus.publish.apply(this.eventBus, parameters);
     }
   };
 });

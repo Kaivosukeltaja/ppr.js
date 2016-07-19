@@ -19,7 +19,7 @@
 
   // Build
   gulp.task('build', function() {
-    gulp.start('build:dist');
+    gulp.start(['build:dist', 'build:dev']);
   });
 
   // Build development
@@ -30,9 +30,8 @@
   });
 
   // Build dist
-  gulp.task('build:dist', ['test'], function() {
+  gulp.task('build:dist', [], function() {
     gulp.src(jsFiles)
-      .pipe(concat('ppr.js'))
       .pipe(uglify({ compress: { drop_console: true }}))
       .pipe(concat('ppr.min.js'))
       .pipe(gulp.dest('dist'));
@@ -70,7 +69,7 @@
   gulp.task('watch', function() {
 
     watch(['src/**/*.js'], function() {
-      gulp.start('build:dev');
+      gulp.start('build');
     });
   });
 })();
