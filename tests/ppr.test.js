@@ -1,4 +1,4 @@
-var ppr = require('../src/ppr'),
+var PPR = require('../src/ppr'),
   Config = require('../src/ppr.config'),
   $ = require('jquery');
 
@@ -6,13 +6,27 @@ var ppr = require('../src/ppr'),
 
 describe('ppr', function() {
 
-  describe('ppr.setConfig', function() {
+  describe('#build', function() {
+
+    describe('#buildPage', function() {
+
+      before(function() {
+        PPR.build();
+      });
+
+      it('should save reference to active page instance', function() {
+        chai.expect(PPR.page_instance).to.be.a('object');
+      });
+    });
+  });
+
+  describe('#setConfig', function() {
 
     it('should set configuration', function() {
 
       var expectedConfiguration = 'testing';
 
-      ppr.setConfig({
+      PPR.setConfig({
         test: expectedConfiguration
       });
 
@@ -20,23 +34,43 @@ describe('ppr', function() {
     });
   });
 
-  describe('ppr.loadConfig', function() {
+  describe('#loadConfig', function() {
 
-    beforeEach(function() {
-      sinon.stub($, 'ajax').yieldsTo('success', {
-        testing: 'test'
+    describe('success', function() {
+      beforeEach(function() {
+        sinon.stub($, 'ajax').yieldsTo('success', {
+          testing: 'test'
+        });
+      });
+
+      afterEach(function() {
+        $.ajax.restore();
+      });
+
+      it('should load configuration', function(done) {
+        PPR.loadConfig('config.json').then(function() {
+          chai.assert.equal('test', Config.get('testing'));
+          done();
+        });
       });
     });
 
-    afterEach(function() {
-      $.ajax.restore();
-    });
+    describe('failure', function() {
 
-    it('should load configuration', function(done) {
-      ppr.loadConfig('config.json').then(function() {
-        chai.assert.equal('test', Config.get('testing'));
-        done();
+      beforeEach(function() {
+        sinon.stub($, 'ajax').yieldsTo('fail');
       });
+
+      afterEach(function() {
+        $.ajax.restore();
+      });
+
+      it('should load configuration', function(done) {
+        PPR.loadConfig('config.json').fail(function(error) {
+          chai.assert.equal(error, 'Load configuration failed');
+          done();
+        });
+      })
     });
   });
 });

@@ -1,6 +1,7 @@
 (function(root, factory) {
 
   // AMD
+  // istanbul ignore next
   if (typeof define === 'function' && define.amd) {
     define('ppr', [
       'jquery',
@@ -21,6 +22,7 @@
   }
 
   // Browser globals
+  // istanbul ignore next
   else {
     root.ppr = root._.assign(root.ppr, factory(
       root.jQuery,

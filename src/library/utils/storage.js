@@ -1,24 +1,41 @@
 (function(root, factory) {
 
   // AMD
+  // istanbul ignore next
   if (typeof define === 'function' && define.amd) {
-    define('ppr.library.utils.storage', [], factory);
+    define('ppr.library.utils.storage', ['ppr.config'], factory);
   }
 
   // Node, CommonJS
   else if (typeof exports === 'object') {
-    module.exports = factory();
+    module.exports = factory(
+      require('../../ppr.config')
+    );
   }
 
   // Browser globals
+  // istanbul ignore next
   else {
-    root.ppr.library.utils.storage = factory();
+    root.ppr.library.utils.storage = factory(root.ppr.config);
   }
-})(this, function() {
+})(this, function(Config) {
 
   'use strict';
 
   return {
+
+    configList: $.extend({
+      enabled: true
+    }, Config.get('storage', {})),
+
+    /**
+     * Check whether storage is enabled
+     * @returns {Boolean}
+     */
+    isEnabled: function() {
+      return this.configList.enabled === true && this.isSupported();
+    },
+
     /**
      * Check whether storage is supported
      * @returns {Boolean}
@@ -34,7 +51,7 @@
      */
     set: function(key, value) {
 
-      if (!this.isSupported()) {
+      if (!this.isEnabled()) {
         return null;
       }
 
@@ -56,7 +73,7 @@
      */
     get: function(key) {
 
-      if (!this.isSupported()) {
+      if (!this.isEnabled()) {
         return null;
       }
 

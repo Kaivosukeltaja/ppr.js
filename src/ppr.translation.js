@@ -1,6 +1,7 @@
 (function(root, factory) {
 
   // AMD
+  // istanbul ignore next
   if (typeof define === 'function' && define.amd) {
     define('ppr.translation', [
       'ppr.config',
@@ -19,6 +20,7 @@
   }
 
   // Browser globals
+  // istanbul ignore next
   else {
     root.ppr.translation = factory(root.ppr.config, root.ppr.library.utils.string, root._);
   }
@@ -99,20 +101,6 @@
       }
 
       return translation;
-    },
-
-    /**
-     * Translate from custom source tree
-     * @param {string} key          target key
-     * @param {Object} customSource object that contains translations
-     * @param {string} [language]     target language
-     * @return {string|null} translated string
-     */
-    translateFromSource: function(key, customSource, language) {
-      var targetLanguage = this.getLanguage(language),
-        targetKey = this.getPrefixedKey(key, targetLanguage);
-
-      return customSource.hasOwnProperty(targetKey) ? customSource[targetKey] : null;
     }
   };
 
@@ -133,13 +121,6 @@
      */
     translate: function(key, variables, language) {
       return Translation.translate(key, variables, language);
-    },
-
-    /**
-     * @inheritdoc
-     */
-    translateFromSource: function(key, customSource, language) {
-      return Translation.translateFromSource(key, customSource, language);
     }
   };
 });

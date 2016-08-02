@@ -1,6 +1,7 @@
 (function(root, factory) {
 
   // AMD
+  // istanbul ignore next
   if (typeof define === 'function' && define.amd) {
     define('ppr.component.reloadable_prototype', [
       'ppr.component.base_prototype',
@@ -17,6 +18,7 @@
   }
 
   // Browser globals
+  // istanbul ignore next
   else {
     root.ppr.component.reloadable_prototype = factory(
       root.ppr.component.base_prototype,

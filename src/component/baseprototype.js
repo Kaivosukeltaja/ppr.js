@@ -1,6 +1,7 @@
 (function(root, factory) {
 
   // AMD
+  // istanbul ignore next
   if (typeof define === 'function' && define.amd) {
     define('ppr.component.base_prototype', ['ppr.library.utils.object'], factory);
   }
@@ -10,7 +11,8 @@
     module.exports = factory(require('../library/utils/object'));
   }
 
-  // Browser globals
+  // Browser global
+  // istanbul ignore next
   else {
     root.ppr.component.base_prototype = factory(root.ppr.library.utils.object);
   }

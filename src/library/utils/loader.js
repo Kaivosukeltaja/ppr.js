@@ -1,6 +1,7 @@
 (function(root, factory) {
 
   // AMD
+  // istanbul ignore next
   if (typeof define === 'function' && define.amd) {
     define('ppr.library.utils.loader', [
       'lodash'
@@ -15,6 +16,7 @@
   }
 
   // Browser globals
+  // istanbul ignore next
   else {
     root.ppr.library.utils.loader = factory(root._);
   }
@@ -48,6 +50,8 @@
      * @returns {*}
      */
     load: function(namespaces, config, callback) {
+
+      var _this = this;
 
       if (typeof callback !== 'function') {
         throw new Error('Callback has to present');
@@ -86,19 +90,17 @@
       // Use CommonJS
       else if (this.hasCommonSupport()) {
 
+        this.loadBulk();
+
         _.each(namespaces, function(namespace) {
 
           namespace = namespace.split('.');
 
           // Remove first
           namespace.shift();
-
           namespace = _.map(namespace, _.camelCase);
-          namespace.unshift('../..');
 
-          namespace = namespace.join('/').toLowerCase().trim();
-
-          dependencies.push(require(namespace));
+          dependencies.push(_.result(_this.commonModules, namespace.join('.').toLowerCase().trim()));
         });
 
         return callback.apply(null, dependencies);
@@ -110,6 +112,22 @@
       });
 
       return callback.apply(null, dependencies);
+    },
+
+    /**
+     * Load all files when using CommonJS
+     */
+    loadBulk: function() {
+
+      // No support for CommonJS or already loaded
+      if (!this.hasCommonSupport() || this.bulkLoaded === true) {
+        return;
+      }
+
+      var bulk = require('bulk-require');
+      this.commonModules = bulk(__dirname + '/../../', ['**/*.js']);
+
+      this.bulkLoaded = true;
     }
   };
 });

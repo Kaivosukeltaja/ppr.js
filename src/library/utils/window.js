@@ -1,9 +1,11 @@
 (function(root, factory) {
 
   // AMD
+  // istanbul ignore next
   if (typeof define === 'function' && define.amd) {
     define('ppr.library.utils.window', [
       'ppr.config',
+      'jquery',
       'lodash'
     ], factory);
   }
@@ -12,21 +14,26 @@
   else if (typeof exports === 'object') {
     module.exports = factory(
       require('../../ppr.config'),
+      require('jquery'),
       require('lodash')
     );
   }
 
   // Browser globals
+  // istanbul ignore next
   else {
-    root.ppr.library.utils.window = factory(root.ppr.config, root._);
+    root.ppr.library.utils.window = factory(root.ppr.config, root.$, root._);
   }
-})(this, function(Config, _) {
+})(this, function(Config, $, _) {
 
   'use strict';
 
   return {
 
-    breakpoints: null,
+    configList: $.extend(true, {
+      breakpoints: {},
+      mobile_breakpoints: []
+    }, Config.get('window', {})),
 
     /**
      * Check whether given breakpoint exists
@@ -34,13 +41,7 @@
      * @returns {Boolean}
      */
     isBreakpoint: function(breakpoint) {
-
-      // Get breakpoints
-      if (!this.breakpoints) {
-        this.breakpoints = Config.get('window.breakpoints', {});
-      }
-
-      return typeof this.breakpoints[breakpoint] !== 'undefined';
+      return typeof this.configList.breakpoints[breakpoint] !== 'undefined';
     },
 
     /**
@@ -52,7 +53,7 @@
       var _this = this,
         isMobile = false;
 
-      _.each(Config.get('window.mobile_breakpoints', []), function(breakpoint) {
+      _.each(this.configList.mobile_breakpoints, function(breakpoint) {
 
         if (!isMobile) {
           isMobile = _this.matchBreakpoint(breakpoint);
@@ -79,7 +80,7 @@
         return false;
       }
 
-      var breakpointDetails = this.breakpoints[breakpoint],
+      var breakpointDetails = this.configList.breakpoints[breakpoint],
         targetWidth = _.replace(breakpointDetails, /[<>]/, '').trim();
 
       // Smaller than

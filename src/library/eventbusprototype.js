@@ -1,6 +1,7 @@
 (function(root, factory) {
 
   // AMD
+  // istanbul ignore next
   if (typeof define === 'function' && define.amd) {
     define('ppr.library.event_bus_prototype', ['jquery', 'lodash'], factory);
   }
@@ -13,6 +14,7 @@
   }
 
   // Browser globals
+  // istanbul ignore next
   else {
     root.ppr.library.event_bus_prototype = factory(root.$, root._);
   }

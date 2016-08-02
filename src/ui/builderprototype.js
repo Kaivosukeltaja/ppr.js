@@ -1,6 +1,7 @@
 (function(root, factory) {
 
   // AMD
+  // istanbul ignore next
   if (typeof define === 'function' && define.amd) {
     define('ppr.ui.builder_prototype', [
       'ppr.library.utils.loader',
@@ -17,6 +18,7 @@
   }
 
   // Browser globals
+  // istanbul ignore next
   else {
     root.ppr.ui.builder_prototype = factory(root.ppr.library.utils.loader, root._);
   }

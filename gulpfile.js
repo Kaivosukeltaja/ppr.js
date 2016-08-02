@@ -39,7 +39,7 @@
 
   // Default
   gulp.task('default', function() {
-    gulp.start(['build:dev', 'watch']);
+    gulp.start(['build', 'watch']);
   });
 
   // JSCS

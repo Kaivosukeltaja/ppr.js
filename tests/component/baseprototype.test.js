@@ -124,8 +124,9 @@ describe('ppr.component.base_prototype', function() {
     pageNode = $('<body>');
     componentNode = $('<div>').attr('data-component', '').appendTo(pageNode);
 
-    component = new function() { return $.extend({}, ComponentBasePrototype); };
-    page = new function() { return $.extend({}, PageBasePrototype); };
+    component = new function() { return _.cloneDeep(ComponentBasePrototype); };
+    page = new function() { return _.cloneDeep(PageBasePrototype); };
+
     eventBus = new EventBusPrototype;
 
     // Initialize page
@@ -136,6 +137,12 @@ describe('ppr.component.base_prototype', function() {
 
     componentTester(_.uniqueId('Component_'), componentNode, component, page, eventBus);
 
+    it('should allow adding messages', function() {
+      component.setModuleMessages({ test_module: { MODULE_TEST_MESSAGE: 'module_test_message' }});
+
+      chai.expect(_.keys(component.messages)).to.have.length(1);
+    });
+
     describe('references', function() {
 
       it('should not have any child components', function() {
@@ -145,7 +152,7 @@ describe('ppr.component.base_prototype', function() {
       it('should not have parent component', function() {
         chai.expect(component.getParent()).to.be.null;
       });
-    })
+    });
   });
 
   describe('component with references', function() {
@@ -164,10 +171,10 @@ describe('ppr.component.base_prototype', function() {
     childComponentId = _.uniqueId('Component_');
     secondChildComponentId = _.uniqueId('Component_');
 
-    parentComponent = new function() { return $.extend({}, ComponentBasePrototype); };
-    childComponent = new function() { return $.extend({}, ComponentBasePrototype); };
-    secondChildComponent = new function() { return $.extend({}, ComponentBasePrototype); };
-    rootPage = new function() { return $.extend({}, PageBasePrototype); };
+    parentComponent = new function() { return _.cloneDeep(ComponentBasePrototype); };
+    childComponent = new function() { return _.cloneDeep(ComponentBasePrototype); };
+    secondChildComponent = new function() { return _.cloneDeep(ComponentBasePrototype); };
+    rootPage = new function() { return _.cloneDeep(PageBasePrototype); };
     eventBus = new EventBusPrototype;
 
     // Initialize page
@@ -192,6 +199,7 @@ describe('ppr.component.base_prototype', function() {
         childComponent.node.appendTo(parentComponent.node);
         secondChildComponent.node.appendTo(childComponent.node);
       });
+
 
       it('should have one child component', function() {
         chai.expect(parentComponent.getChildren()).to.have.length(1);

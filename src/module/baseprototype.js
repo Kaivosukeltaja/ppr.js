@@ -1,6 +1,7 @@
 (function(root, factory) {
 
   // AMD
+  // istanbul ignore next
   if (typeof define === 'function' && define.amd) {
     define('ppr.module.base_prototype', [], factory);
   }
@@ -11,6 +12,7 @@
   }
 
   // Browser globals
+  // istanbul ignore next
   else {
     root.ppr.module.base_prototype = factory();
   }
@@ -52,6 +54,8 @@
 
       // Build
       this.build();
+
+      return true;
     },
 
     /**

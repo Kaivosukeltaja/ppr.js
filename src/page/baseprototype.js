@@ -1,6 +1,7 @@
 (function(root, factory) {
 
   // AMD
+  // istanbul ignore next
   if (typeof define === 'function' && define.amd) {
     define('ppr.page.base_prototype', [
       'ppr.config',
@@ -25,6 +26,7 @@
   }
 
   // Browser globals
+  // istanbul ignore next
   else {
     root.ppr.page.base_prototype = factory(
       root.ppr.config,
@@ -56,7 +58,7 @@
 
       this.setDefaultSubscribers();
 
-      this.buildComponents();
+      this.buildComponents(this.node);
       this.buildUIExtensions();
     },
 
@@ -108,6 +110,15 @@
       // Create new id
       else {
         params.id = _.uniqueId('Component_');
+      }
+
+      // Check that component is not already built
+      if (typeof this.components[params.id] !== 'undefined') {
+
+        // Already built
+        if (this.components[params.id].isBuilt) {
+          return false;
+        }
       }
 
       params.name = name;
@@ -169,14 +180,14 @@
     },
 
     /**
-     * Build all components in page
+     * Build all components in container node
      */
-    buildComponents: function() {
+    buildComponents: function(node) {
 
       var _this = this;
 
       // Loop through components
-      this.node.find('[data-component]').each(function(index, element) {
+      node.find('[data-component]').each(function(index, element) {
         _this.eventBus.publish('build_component', $(element));
       });
     },
@@ -223,6 +234,8 @@
           this.node.attr('data-page-data')
         ));
       }
+
+      return true;
     },
 
     /**
@@ -240,11 +253,40 @@
     },
 
     /**
+     * Remove component
+     * @param {Object[]|string} ids target component id
+     */
+    removeComponent: function(ids) {
+
+      // Turn into array of ids
+      if (typeof ids === 'string') {
+        ids = [ids];
+      }
+
+      var _this = this;
+
+      _.each(ids, function(id) {
+
+        var componentInstance = _this.components[id];
+
+        // Remove references
+        if (typeof componentInstance !== 'undefined') {
+          componentInstance.reset();
+          componentInstance.node.remove();
+          delete _this.components[id];
+        }
+      });
+    },
+
+    /**
      * Set default subscribers
      */
     setDefaultSubscribers: function() {
 
+      this.eventBus.subscribe(this, 'remove_component', this.removeComponent);
+      this.eventBus.subscribe(this, 'build_components', this.buildComponents);
       this.eventBus.subscribe(this, 'build_component', this.buildComponent);
+      this.eventBus.subscribe(this, 'build_extensions', this.buildUIExtensions);
       this.eventBus.subscribe(this, 'component_build_finished', this.onComponentBuildFinished);
     }
   };

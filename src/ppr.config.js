@@ -1,6 +1,7 @@
 (function(root, factory) {
 
   // AMD
+  // istanbul ignore next
   if (typeof define === 'function' && define.amd) {
     define('ppr.config', ['lodash'], factory);
   }
@@ -11,6 +12,7 @@
   }
 
   // Browser globals
+  // istanbul ignore next
   else {
     root.ppr.config = factory(root._);
   }

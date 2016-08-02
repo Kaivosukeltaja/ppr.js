@@ -1,4 +1,6 @@
-var istanbul = require('browserify-istanbul');
+var istanbul = require('browserify-istanbul'),
+  _ = require('lodash'),
+  bulkify = require('bulkify');
 
 module.exports = function(config) {
 
@@ -34,6 +36,7 @@ module.exports = function(config) {
     },
     browserify: {
       transform: [
+        'bulkify',
         istanbul()
       ]
     }
