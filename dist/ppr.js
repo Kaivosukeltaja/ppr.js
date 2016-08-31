@@ -452,6 +452,17 @@
 
   return {
 
+    bulkModules: null,
+
+    /**
+     * Add bulk modules to cache
+     * @param {Object} modules
+     */
+    addBulkModules: function(modules) {
+
+      this.bulkModules = _.merge(this.getBulkModules(), modules);
+    },
+
     /**
      * Check whether code supports AMD
      * @returns {Boolean}
@@ -466,6 +477,19 @@
      */
     hasCommonSupport: function() {
       return typeof exports === 'object';
+    },
+
+    /**
+     * Get list of modules loaded with bulk style
+     */
+    getBulkModules: function() {
+
+      // Load bulk modules
+      if (this.bulkModules === null) {
+        this.bulkModules = this.loadBulkModules();
+      }
+
+      return this.bulkModules;
     },
 
     /**
@@ -516,8 +540,6 @@
       // Use CommonJS
       else if (this.hasCommonSupport()) {
 
-        this.loadBulk();
-
         _.each(namespaces, function(namespace) {
 
           namespace = namespace.split('.');
@@ -526,7 +548,7 @@
           namespace.shift();
           namespace = _.map(namespace, _.camelCase);
 
-          dependencies.push(_.result(_this.commonModules, namespace.join('.').toLowerCase().trim()));
+          dependencies.push(_.result(_this.getBulkModules(), namespace.join('.').toLowerCase().trim()));
         });
 
         return callback.apply(null, dependencies);
@@ -543,17 +565,20 @@
     /**
      * Load all files when using CommonJS
      */
-    loadBulk: function() {
+    loadBulkModules: function() {
+
+      var result = {};
 
       // No support for CommonJS or already loaded
-      if (!this.hasCommonSupport() || this.bulkLoaded === true) {
-        return;
+      if (!this.hasCommonSupport()) {
+        return result;
       }
 
       var bulk = require('bulk-require');
-      this.commonModules = bulk(__dirname + '/../../', ['**/*.js']);
 
-      this.bulkLoaded = true;
+      result = bulk(__dirname + '/../../', ['**/*.js']);
+
+      return result;
     }
   };
 });
@@ -1407,15 +1432,19 @@
 
       this.componentLoaderWrapper = this.node.find('.component-loader__wrapper');
 
-      this.eventBus.subscribe(this, 'reload', this.reload, this.id);
-      this.eventBus.subscribe(this, 'reload_started', this.onReloadStarted, this.id);
-      this.eventBus.subscribe(this, 'reload_ready', this.onReloadReady, this.id);
-      this.eventBus.subscribe(this, 'reload_components', this.reload);
+      var subscribers = [
+        this.eventBus.subscribe(this, 'reload', this.reload, this.id),
+        this.eventBus.subscribe(this, 'reload_started', this.onReloadStarted, this.id),
+        this.eventBus.subscribe(this, 'reload_ready', this.onReloadReady, this.id),
+        this.eventBus.subscribe(this, 'reload_components', this.reload)
+      ];
+
+      this.cacheSubscribers = this.cacheSubscribers.concat(subscribers);
 
       // Publish build finished
       this.eventBus.publish('component_build_finished', this.id);
-      this.isBuilt = true;
 
+      this.isBuilt = true;
     },
 
     /**
@@ -1530,6 +1559,70 @@
      */
     getMessages: function() {
       return this.messages;
+    }
+  };
+});
+
+(function(root, factory) {
+
+  // AMD
+  // istanbul ignore next
+  if (typeof define === 'function' && define.amd) {
+    define('ppr.ui.builder_prototype', [
+      'ppr.library.utils.loader',
+      'lodash'
+    ], factory);
+  }
+
+  // Node, CommonJS
+  else if (typeof exports === 'object') {
+    module.exports = factory(
+      require('../library/utils/loader'),
+      require('lodash')
+    );
+  }
+
+  // Browser globals
+  // istanbul ignore next
+  else {
+    root.ppr.ui.builder_prototype = factory(root.ppr.library.utils.loader, root._);
+  }
+})(this, function(UniversalLoader, _) {
+
+  'use strict';
+
+  return {
+
+    /**
+     * Initialize builder
+     * @returns {Boolean}
+     */
+    initialize: function() {
+      var _this = this;
+
+      if (!this.shouldBuild()) {
+        return false;
+      }
+
+      UniversalLoader.load(this.getDependencies(), { custom: true }, function() {
+        _this.build.apply(_this, Array.prototype.slice.call(arguments));
+      });
+    },
+
+    /**
+     * Check whether builder should build
+     * @returns {Boolean}
+     */
+    shouldBuild: function() {
+      return true;
+    },
+
+    /**
+     * Get list of dependencies to be loaded
+     * @returns {Object[]}
+     */
+    getDependencies: function() {
+      return [];
     }
   };
 });
@@ -1824,70 +1917,6 @@
       this.eventBus.subscribe(this, 'build_component', this.buildComponent);
       this.eventBus.subscribe(this, 'build_extensions', this.buildUIExtensions);
       this.eventBus.subscribe(this, 'component_build_finished', this.onComponentBuildFinished);
-    }
-  };
-});
-
-(function(root, factory) {
-
-  // AMD
-  // istanbul ignore next
-  if (typeof define === 'function' && define.amd) {
-    define('ppr.ui.builder_prototype', [
-      'ppr.library.utils.loader',
-      'lodash'
-    ], factory);
-  }
-
-  // Node, CommonJS
-  else if (typeof exports === 'object') {
-    module.exports = factory(
-      require('../library/utils/loader'),
-      require('lodash')
-    );
-  }
-
-  // Browser globals
-  // istanbul ignore next
-  else {
-    root.ppr.ui.builder_prototype = factory(root.ppr.library.utils.loader, root._);
-  }
-})(this, function(UniversalLoader, _) {
-
-  'use strict';
-
-  return {
-
-    /**
-     * Initialize builder
-     * @returns {Boolean}
-     */
-    initialize: function() {
-      var _this = this;
-
-      if (!this.shouldBuild()) {
-        return false;
-      }
-
-      UniversalLoader.load(this.getDependencies(), { custom: true }, function() {
-        _this.build.apply(_this, Array.prototype.slice.call(arguments));
-      });
-    },
-
-    /**
-     * Check whether builder should build
-     * @returns {Boolean}
-     */
-    shouldBuild: function() {
-      return true;
-    },
-
-    /**
-     * Get list of dependencies to be loaded
-     * @returns {Object[]}
-     */
-    getDependencies: function() {
-      return [];
     }
   };
 });

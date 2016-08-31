@@ -26,6 +26,17 @@
 
   return {
 
+    bulkModules: null,
+
+    /**
+     * Add bulk modules to cache
+     * @param {Object} modules
+     */
+    addBulkModules: function(modules) {
+
+      this.bulkModules = _.merge(this.getBulkModules(), modules);
+    },
+
     /**
      * Check whether code supports AMD
      * @returns {Boolean}
@@ -40,6 +51,19 @@
      */
     hasCommonSupport: function() {
       return typeof exports === 'object';
+    },
+
+    /**
+     * Get list of modules loaded with bulk style
+     */
+    getBulkModules: function() {
+
+      // Load bulk modules
+      if (this.bulkModules === null) {
+        this.bulkModules = this.loadBulkModules();
+      }
+
+      return this.bulkModules;
     },
 
     /**
@@ -90,8 +114,6 @@
       // Use CommonJS
       else if (this.hasCommonSupport()) {
 
-        this.loadBulk();
-
         _.each(namespaces, function(namespace) {
 
           namespace = namespace.split('.');
@@ -100,7 +122,7 @@
           namespace.shift();
           namespace = _.map(namespace, _.camelCase);
 
-          dependencies.push(_.result(_this.commonModules, namespace.join('.').toLowerCase().trim()));
+          dependencies.push(_.result(_this.getBulkModules(), namespace.join('.').toLowerCase().trim()));
         });
 
         return callback.apply(null, dependencies);
@@ -117,17 +139,20 @@
     /**
      * Load all files when using CommonJS
      */
-    loadBulk: function() {
+    loadBulkModules: function() {
+
+      var result = {};
 
       // No support for CommonJS or already loaded
-      if (!this.hasCommonSupport() || this.bulkLoaded === true) {
-        return;
+      if (!this.hasCommonSupport()) {
+        return result;
       }
 
       var bulk = require('bulk-require');
-      this.commonModules = bulk(__dirname + '/../../', ['**/*.js']);
 
-      this.bulkLoaded = true;
+      result = bulk(__dirname + '/../../', ['**/*.js']);
+
+      return result;
     }
   };
 });

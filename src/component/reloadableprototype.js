@@ -40,15 +40,19 @@
 
       this.componentLoaderWrapper = this.node.find('.component-loader__wrapper');
 
-      this.eventBus.subscribe(this, 'reload', this.reload, this.id);
-      this.eventBus.subscribe(this, 'reload_started', this.onReloadStarted, this.id);
-      this.eventBus.subscribe(this, 'reload_ready', this.onReloadReady, this.id);
-      this.eventBus.subscribe(this, 'reload_components', this.reload);
+      var subscribers = [
+        this.eventBus.subscribe(this, 'reload', this.reload, this.id),
+        this.eventBus.subscribe(this, 'reload_started', this.onReloadStarted, this.id),
+        this.eventBus.subscribe(this, 'reload_ready', this.onReloadReady, this.id),
+        this.eventBus.subscribe(this, 'reload_components', this.reload)
+      ];
+
+      this.cacheSubscribers = this.cacheSubscribers.concat(subscribers);
 
       // Publish build finished
       this.eventBus.publish('component_build_finished', this.id);
-      this.isBuilt = true;
 
+      this.isBuilt = true;
     },
 
     /**
