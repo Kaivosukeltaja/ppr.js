@@ -3,22 +3,23 @@
   // AMD
   // istanbul ignore next
   if (typeof define === 'function' && define.amd) {
-    define('ppr.library.utils.storage', ['ppr.config'], factory);
+    define('ppr.library.utils.storage', ['ppr.config', 'jquery'], factory);
   }
 
   // Node, CommonJS
   else if (typeof exports === 'object') {
     module.exports = factory(
-      require('../../ppr.config')
+      require('../../ppr.config'),
+      require('jquery')
     );
   }
 
   // Browser globals
   // istanbul ignore next
   else {
-    root.ppr.library.utils.storage = factory(root.ppr.config);
+    root.ppr.library.utils.storage = factory(root.ppr.config, root.vendor._);
   }
-})(this, function(Config) {
+})(this, function(Config, $) {
 
   'use strict';
 

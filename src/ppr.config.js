@@ -14,7 +14,7 @@
   // Browser globals
   // istanbul ignore next
   else {
-    root.ppr.config = factory(root._);
+    root.ppr.config = factory(root.vendor._);
   }
 })(this, function(_) {
 

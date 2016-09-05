@@ -22,7 +22,7 @@
   // Browser globals
   // istanbul ignore next
   else {
-    root.ppr.library.utils.window = factory(root.ppr.config, root.$, root._);
+    root.ppr.library.utils.window = factory(root.ppr.config, root.vendor.$, root.vendor._);
   }
 })(this, function(Config, $, _) {
 

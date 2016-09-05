@@ -3,20 +3,23 @@
   // AMD
   // istanbul ignore next
   if (typeof define === 'function' && define.amd) {
-    define('ppr.library.utils.string', ['lodash'], factory);
+    define('ppr.library.utils.string', ['lodash', 'jquery'], factory);
   }
 
   // Node, CommonJS
   else if (typeof exports === 'object') {
-    module.exports = factory(require('lodash'));
+    module.exports = factory(
+      require('lodash'),
+      require('jquery')
+    );
   }
 
   // Browser globals
   // istanbul ignore next
   else {
-    root.ppr.library.utils.string = factory(root._);
+    root.ppr.library.utils.string = factory(root.vendor._, root.vendor.$);
   }
-})(this, function(_) {
+})(this, function(_, $) {
 
   'use strict';
 

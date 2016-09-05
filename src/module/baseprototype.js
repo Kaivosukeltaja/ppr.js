@@ -3,20 +3,20 @@
   // AMD
   // istanbul ignore next
   if (typeof define === 'function' && define.amd) {
-    define('ppr.module.base_prototype', [], factory);
+    define('ppr.module.base_prototype', ['jquery'], factory);
   }
 
   // Node, CommonJS
   else if (typeof exports === 'object') {
-    module.exports = factory();
+    module.exports = factory(require('jquery'));
   }
 
   // Browser globals
   // istanbul ignore next
   else {
-    root.ppr.module.base_prototype = factory();
+    root.ppr.module.base_prototype = factory(root.vendor.$);
   }
-})(this, function() {
+})(this, function($) {
 
   'use strict';
 

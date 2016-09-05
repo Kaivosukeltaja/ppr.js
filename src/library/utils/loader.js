@@ -18,7 +18,7 @@
   // Browser globals
   // istanbul ignore next
   else {
-    root.ppr.library.utils.loader = factory(root._);
+    root.ppr.library.utils.loader = factory(root.vendor._);
   }
 })(this, function(_) {
 

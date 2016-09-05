@@ -22,7 +22,7 @@
   else {
     root.ppr.component.reloadable_prototype = factory(
       root.ppr.component.base_prototype,
-      root.$
+      root.vendor.$
     );
   }
 })(this, function(BasePrototype, $) {

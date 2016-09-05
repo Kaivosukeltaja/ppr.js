@@ -16,7 +16,7 @@
   // Browser globals
   // istanbul ignore next
   else {
-    root.ppr.library.event_bus_prototype = factory(root.$, root._);
+    root.ppr.library.event_bus_prototype = factory(root.vendor.$, root.vendor._);
   }
 })(this, function($, _) {
 

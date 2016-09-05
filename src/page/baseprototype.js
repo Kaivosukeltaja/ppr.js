@@ -33,8 +33,8 @@
       root.ppr.library.utils.object,
       root.ppr.library.utils.loader,
       root.ppr.library.event_bus_prototype,
-      root.$,
-      root._
+      root.vendor.$,
+      root.vendor._
     );
   }
 })(this, function(Config, ObjectUtils, UniversalLoader, EventBusPrototype, $, _) {

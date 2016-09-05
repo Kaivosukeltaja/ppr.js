@@ -20,7 +20,7 @@
   // Browser globals
   // istanbul ignore next
   else {
-    root.ppr.ui.builder_prototype = factory(root.ppr.library.utils.loader, root._);
+    root.ppr.ui.builder_prototype = factory(root.ppr.library.utils.loader, root.vendor._);
   }
 })(this, function(UniversalLoader, _) {
 

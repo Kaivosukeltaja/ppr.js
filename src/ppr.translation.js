@@ -22,7 +22,7 @@
   // Browser globals
   // istanbul ignore next
   else {
-    root.ppr.translation = factory(root.ppr.config, root.ppr.library.utils.string, root._);
+    root.ppr.translation = factory(root.ppr.config, root.ppr.library.utils.string, root.vendor._);
   }
 })(this, function(Config, StringUtils, _) {
 

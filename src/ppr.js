@@ -24,9 +24,9 @@
   // Browser globals
   // istanbul ignore next
   else {
-    root.ppr = root._.assign(root.ppr, factory(
-      root.jQuery,
-      root._,
+    root.ppr = root.vendor._.assign(root.ppr, factory(
+      root.vendor.$,
+      root.vendor._,
       root.ppr.library.utils.loader,
       root.ppr.config
     ));
