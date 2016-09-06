@@ -4,6 +4,7 @@
   // istanbul ignore next
   if (typeof define === 'function' && define.amd) {
     define('ppr.library.utils.loader', [
+      'ppr.config',
       'lodash'
     ], factory);
   }
@@ -11,6 +12,7 @@
   // Node, CommonJS
   else if (typeof exports === 'object') {
     module.exports = factory(
+      require('../../ppr.config'),
       require('lodash')
     );
   }
@@ -18,15 +20,20 @@
   // Browser globals
   // istanbul ignore next
   else {
-    root.ppr.library.utils.loader = factory(root.vendor._);
+    root.ppr.library.utils.loader = factory(root.ppr.config, root.vendor._);
   }
-})(this, function(_) {
+})(this, function(Config, _) {
 
   'use strict';
 
   return {
 
     bulkModules: null,
+    isInitialized: false,
+    configList: {
+      supportAMD: true,
+      supportCommon: true
+    },
 
     /**
      * Add bulk modules to cache
@@ -42,7 +49,7 @@
      * @returns {Boolean}
      */
     hasAMDSupport: function() {
-      return typeof define === 'function' && define.amd;
+      return this.configList.supportAMD === true && typeof define === 'function' && define.amd;
     },
 
     /**
@@ -50,7 +57,7 @@
      * @returns {Boolean}
      */
     hasCommonSupport: function() {
-      return typeof exports === 'object';
+      return this.configList.supportCommon === true && typeof exports === 'object';
     },
 
     /**
@@ -67,6 +74,17 @@
     },
 
     /**
+     * Initialize
+     */
+    initialize: function() {
+
+      this.configList = _.extend(this.configList, Config.get('universal_loader', {}));
+
+      // Mark as initialized
+      this.isInitialized = true;
+    },
+
+    /**
      * Load dependency universally
      * @param {Object[]|string} namespaces names of dependencies
      * @param {Object}          config     list of configurations
@@ -74,6 +92,11 @@
      * @returns {*}
      */
     load: function(namespaces, config, callback) {
+
+      // Initialize once
+      if (!this.isInitialized) {
+        this.initialize();
+      }
 
       var _this = this;
 
