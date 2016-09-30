@@ -128,6 +128,11 @@
 
       UniversalLoader.load(namespace, loaderParams, function(ComponentPrototype) {
 
+        // No component instance found
+        if (typeof ComponentPrototype === 'undefined') {
+          return false;
+        }
+
         // Instantiate prototype
         var instance = new function() { return $.extend(true, {}, ComponentPrototype); };
 
