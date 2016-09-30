@@ -43,7 +43,7 @@
 
   return {
 
-    eventBus: new EventBusPrototype(Config.get('event_bus', {})),
+    eventBus: new EventBusPrototype(),
     name: null,
     node: null,
     components: {},

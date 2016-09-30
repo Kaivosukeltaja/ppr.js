@@ -3,12 +3,17 @@
   // AMD
   // istanbul ignore next
   if (typeof define === 'function' && define.amd) {
-    define('ppr.library.event_bus_prototype', ['jquery', 'lodash'], factory);
+    define('ppr.library.event_bus_prototype', [
+      'ppr.config',
+      'jquery',
+      'lodash'
+    ], factory);
   }
 
   // Node, CommonJS
   else if (typeof exports === 'object') {
     module.exports = factory(
+      require('../ppr.config'),
       require('jquery'),
       require('lodash'));
   }
@@ -16,25 +21,20 @@
   // Browser globals
   // istanbul ignore next
   else {
-    root.ppr.library.event_bus_prototype = factory(root.vendor.$, root.vendor._);
+    root.ppr.library.event_bus_prototype = factory(root.ppr.config, root.vendor.$, root.vendor._);
   }
-})(this, function($, _) {
+})(this, function(Config, $, _) {
 
   'use strict';
 
   /**
    * EventBus constructor
    * @constructor
-   * @param {Object} configs list of configurations
    */
-  var EventBus = function(configs) {
+  var EventBus = function() {
 
     this.eventList = {};
     this.messageIndex = {};
-
-    this.configList = $.extend({}, {
-      debug: false
-    }, configs);
   };
 
   EventBus.prototype = {
@@ -67,7 +67,7 @@
     log: function(action, message, data) {
 
       // Logging is disabled
-      if (this.configList.debug !== true) {
+      if (Config.get('event_bus.debug', false) !== true) {
         return false;
       }
 
