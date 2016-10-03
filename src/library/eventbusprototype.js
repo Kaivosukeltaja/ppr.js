@@ -35,6 +35,10 @@
 
     this.eventList = {};
     this.messageIndex = {};
+
+    this.configList = $.extend({}, {
+      debug: false
+    }, Config.get('event_bus', {}));
   };
 
   EventBus.prototype = {
@@ -67,7 +71,7 @@
     log: function(action, message, data) {
 
       // Logging is disabled
-      if (Config.get('event_bus.debug', false) !== true) {
+      if (this.configList.debug !== true) {
         return false;
       }
 
