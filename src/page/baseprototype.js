@@ -43,7 +43,7 @@
 
   return {
 
-    eventBus: new EventBusPrototype(Config.get('event_bus', {})),
+    eventBus: new EventBusPrototype(),
     name: null,
     node: null,
     components: {},
@@ -127,6 +127,11 @@
       params.page = this;
 
       UniversalLoader.load(namespace, loaderParams, function(ComponentPrototype) {
+
+        // No component instance found
+        if (typeof ComponentPrototype === 'undefined') {
+          return false;
+        }
 
         // Instantiate prototype
         var instance = new function() { return $.extend(true, {}, ComponentPrototype); };

@@ -102,6 +102,20 @@ describe('ppr.page.baseprototype', function() {
           chai.assert.equal(componentInstance.name, 'reloadable_prototype');
         });
       });
+
+      describe('component not found', function() {
+
+        it('should not build component if not found', function() {
+
+          var componentNode = $('<div>')
+            .attr('data-component', 'testComponent')
+            .appendTo(pageInstance.node);
+
+          pageInstance.buildComponent(componentNode);
+
+          chai.expect(componentNode.attr('data-component-id')).to.be.undefined;
+        });
+      });
     });
   });
 });
