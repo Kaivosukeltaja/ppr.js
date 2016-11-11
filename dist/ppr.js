@@ -89,12 +89,17 @@
   // AMD
   // istanbul ignore next
   if (typeof define === 'function' && define.amd) {
-    define('ppr.library.event_bus_prototype', ['jquery', 'lodash'], factory);
+    define('ppr.library.event_bus_prototype', [
+      'ppr.config',
+      'jquery',
+      'lodash'
+    ], factory);
   }
 
   // Node, CommonJS
   else if (typeof exports === 'object') {
     module.exports = factory(
+      require('../ppr.config'),
       require('jquery'),
       require('lodash'));
   }
@@ -102,25 +107,20 @@
   // Browser globals
   // istanbul ignore next
   else {
-    root.ppr.library.event_bus_prototype = factory(root.vendor.$, root.vendor._);
+    root.ppr.library.event_bus_prototype = factory(root.ppr.config, root.vendor.$, root.vendor._);
   }
-})(this, function($, _) {
+})(this, function(Config, $, _) {
 
   'use strict';
 
   /**
    * EventBus constructor
    * @constructor
-   * @param {Object} configs list of configurations
    */
-  var EventBus = function(configs) {
+  var EventBus = function() {
 
     this.eventList = {};
     this.messageIndex = {};
-
-    this.configList = $.extend({}, {
-      debug: false
-    }, configs);
   };
 
   EventBus.prototype = {
@@ -153,7 +153,7 @@
     log: function(action, message, data) {
 
       // Logging is disabled
-      if (this.configList.debug !== true) {
+      if (Config.get('event_bus.debug', false) !== true) {
         return false;
       }
 
@@ -678,6 +678,31 @@
       }
 
       return result;
+    },
+
+    /**
+     * Legacy browser compatible replacement for Object.assign
+     * From: https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Object/assign
+     */
+    assign: function(target) {
+      // We must check against these specific cases.
+      if (target === undefined || target === null) {
+        throw new TypeError('Cannot convert undefined or null to object');
+      }
+
+      var output = Object(target);
+      for (var index = 1; index < arguments.length; index++) {
+        var source = arguments[index];
+        if (source !== undefined && source !== null) {
+          for (var nextKey in source) {
+            if (source.hasOwnProperty(nextKey)) {
+              output[nextKey] = source[nextKey];
+            }
+          }
+        }
+      }
+
+      return output;
     }
   };
 });
@@ -1284,6 +1309,13 @@
     cacheSubscribers: [],
 
     /**
+     * Create and return a new component based on this one
+     */
+    createComponent: function(obj) {
+      return ObjectUtils.assign({}, this, obj);
+    },
+
+    /**
      * Function to be called when build is finished
      */
     afterBuild: function() {
@@ -1458,7 +1490,7 @@
 
   'use strict';
 
-  return $.extend(true, {}, BasePrototype, {
+  return BasePrototype.createComponent({
 
     componentLoaderWrapper: null,
 
@@ -1645,13 +1677,20 @@
 
   return {
 
-    eventBus: new EventBusPrototype(Config.get('event_bus', {})),
+    eventBus: new EventBusPrototype(),
     name: null,
     node: null,
     components: {},
     data: null,
 
     cacheComponentReady: [],
+
+    /**
+     * Create and return a new page based on this one
+     */
+    createPage: function(obj) {
+      return ObjectUtils.assign({}, this, obj);
+    },
 
     /**
      * Function to be triggered when build is done
@@ -1730,8 +1769,13 @@
 
       UniversalLoader.load(namespace, loaderParams, function(ComponentPrototype) {
 
+        // No component instance found
+        if (typeof ComponentPrototype === 'undefined') {
+          return false;
+        }
+
         // Instantiate prototype
-        var instance = new function() { return $.extend(true, {}, ComponentPrototype); };
+        var instance = ComponentPrototype.createComponent({});
 
         // Remember instance
         _this.components[params.id] = instance;
@@ -2031,7 +2075,7 @@
       UniversalLoader.load(namespace, loaderParams, function(PagePrototype) {
 
         // Instantiate prototype
-        var instance = new function() { return $.extend(true, {}, PagePrototype); };
+        var instance = PagePrototype.createPage({});
 
         instance.initialize(params);
 
