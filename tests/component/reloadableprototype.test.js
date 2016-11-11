@@ -14,7 +14,7 @@ describe('ppr.component.reloadableprototype', function() {
 
   before(function() {
     pageInstance = new function() {
-      return _.cloneDeep(PageBasePrototype);
+      return PageBasePrototype.createPage({});
     };
 
     pageInstance.initialize({
@@ -25,9 +25,7 @@ describe('ppr.component.reloadableprototype', function() {
     pageInstance.build();
     pageInstance.afterBuild();
 
-    componentInstance = new function() {
-      return new _.cloneDeep(ReloadablePrototype)
-    };
+    componentInstance = ReloadablePrototype.createComponent({});
 
     componentInstance.initialize({
       name: 'base_prototype',

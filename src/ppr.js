@@ -71,7 +71,7 @@
       UniversalLoader.load(namespace, loaderParams, function(PagePrototype) {
 
         // Instantiate prototype
-        var instance = new function() { return $.extend(true, {}, PagePrototype); };
+        var instance = PagePrototype.createPage({});
 
         instance.initialize(params);
 

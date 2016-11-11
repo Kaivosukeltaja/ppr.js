@@ -124,8 +124,8 @@ describe('ppr.component.base_prototype', function() {
     pageNode = $('<body>');
     componentNode = $('<div>').attr('data-component', '').appendTo(pageNode);
 
-    component = new function() { return _.cloneDeep(ComponentBasePrototype); };
-    page = new function() { return _.cloneDeep(PageBasePrototype); };
+    component = ComponentBasePrototype.createComponent({});
+    page = PageBasePrototype.createPage({});
 
     eventBus = new EventBusPrototype;
 
@@ -171,10 +171,10 @@ describe('ppr.component.base_prototype', function() {
     childComponentId = _.uniqueId('Component_');
     secondChildComponentId = _.uniqueId('Component_');
 
-    parentComponent = new function() { return _.cloneDeep(ComponentBasePrototype); };
-    childComponent = new function() { return _.cloneDeep(ComponentBasePrototype); };
-    secondChildComponent = new function() { return _.cloneDeep(ComponentBasePrototype); };
-    rootPage = new function() { return _.cloneDeep(PageBasePrototype); };
+    parentComponent = ComponentBasePrototype.createComponent({});
+    childComponent = ComponentBasePrototype.createComponent({});
+    secondChildComponent = ComponentBasePrototype.createComponent({});
+    rootPage = PageBasePrototype.createPage({});
     eventBus = new EventBusPrototype;
 
     // Initialize page

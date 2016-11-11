@@ -29,7 +29,7 @@
 
   'use strict';
 
-  return $.extend(true, {}, BasePrototype, {
+  return BasePrototype.createComponent({
 
     componentLoaderWrapper: null,
 

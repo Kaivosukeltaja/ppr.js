@@ -46,6 +46,13 @@
     cacheSubscribers: [],
 
     /**
+     * Create and return a new component based on this one
+     */
+    createComponent: function(obj) {
+      return ObjectUtils.assign({}, this, obj);
+    },
+
+    /**
      * Function to be called when build is finished
      */
     afterBuild: function() {

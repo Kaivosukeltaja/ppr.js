@@ -52,6 +52,13 @@
     cacheComponentReady: [],
 
     /**
+     * Create and return a new page based on this one
+     */
+    createPage: function(obj) {
+      return ObjectUtils.assign({}, this, obj);
+    },
+
+    /**
      * Function to be triggered when build is done
      */
     afterBuild: function() {
@@ -134,7 +141,7 @@
         }
 
         // Instantiate prototype
-        var instance = new function() { return $.extend(true, {}, ComponentPrototype); };
+        var instance = ComponentPrototype.createComponent({});
 
         // Remember instance
         _this.components[params.id] = instance;
