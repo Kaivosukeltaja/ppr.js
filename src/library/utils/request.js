@@ -1,80 +1,54 @@
-(function(root, factory) {
+import _ from 'lodash';
 
-  // AMD
-  // istanbul ignore next
-  if (typeof define === 'function' && define.amd) {
-    define('ppr.library.utils.request', ['lodash'], factory);
-  }
+export default {
+  query: {},
 
-  // Node, CommonJS
-  else if (typeof exports === 'object') {
-    module.exports = factory(require('lodash'));
-  }
+  /**
+   * Get query parameter
+   * @param {string} name         name of query parameter
+   * @param {*}      defaultValue default value of parameter
+   * @param {string} sourceUrl    target source url
+   * @return {string}
+   */
+  getQueryParam(name, defaultValue = null, sourceUrl) {
+    const parameters = this.getQueryParams(sourceUrl);
 
-  // Browser globals
-  // istanbul ignore next
-  else {
-    root.ppr.library.utils.request = factory(root.vendor._);
-  }
-})(this, function() {
+    if (Object.prototype.hasOwnProperty.call(parameters, name)) {
+      return parameters[name];
+    }
 
-  'use strict';
+    return defaultValue;
+  },
 
-  return {
+  /**
+   * Get list of all query parameters
+   * @return {Object}
+   */
+  getQueryParams(sourceUrl = window.location.href) {
+    const result = {};
+    const searchIndex = sourceUrl.indexOf('?');
 
-    query: {},
+    // Already resolved
+    if (Object.prototype.hasOwnProperty.call(this.query, sourceUrl)) {
+      return this.query[sourceUrl];
+    }
 
-    /**
-     * Get query parameter
-     * @param {string} name         name of query parameter
-     * @param {*}      defaultValue default value of parameter
-     * @param {string} sourceUrl    target source url
-     * @return {string}
-     */
-    getQueryParam: function(name, defaultValue, sourceUrl) {
-      var parameters = this.getQueryParams(sourceUrl);
-
-      return parameters.hasOwnProperty(name) ? parameters[name] : (
-        typeof defaultValue !== 'undefined' ? defaultValue : null
-      );
-    },
-
-    /**
-     * Get list of all query parameters
-     * @return {Object}
-     */
-    getQueryParams: function(sourceUrl) {
-      if (typeof sourceUrl === 'undefined') {
-        sourceUrl = window.location.href;
-      }
-
-      var result = {},
-        searchIndex = sourceUrl.indexOf('?'),
-        queryString,
-        queryVariables;
-
-      // Already resolved
-      if (this.query.hasOwnProperty(sourceUrl)) {
-        return this.query[sourceUrl];
-      }
-
-      // No parameters found
-      if (searchIndex === -1) {
-        return result;
-      }
-
-      queryString = sourceUrl.substring(searchIndex + 1);
-      queryVariables = queryString.split('&');
-
-      _.each(queryVariables, function(parameterString) {
-        var parameter = parameterString.split('=');
-
-        result[parameter[0]] = parameter[1];
-      });
-
-      this.query[sourceUrl] = result;
-
+    // No parameters found
+    if (searchIndex === -1) {
       return result;
     }
-  };
-});
+
+    const queryString = sourceUrl.substring(searchIndex + 1);
+    const queryVariables = queryString.split('&');
+
+    _.each(queryVariables, (parameterString) => {
+      const parameter = parameterString.split('=');
+
+      result[parameter[0]] = parameter[1];
+    });
+
+    this.query[sourceUrl] = result;
+
+    return result;
+  },
+};

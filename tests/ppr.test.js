@@ -1,76 +1,69 @@
-var PPR = require('../src/ppr'),
-  Config = require('../src/ppr.config'),
-  $ = require('jquery');
+import PPR from 'ppr';
+import Config from 'ppr.config';
+import $ from 'jquery';
+import chai from 'chai';
+import sinon from 'sinon';
 
-'use strict';
-
-describe('ppr', function() {
-
-  describe('#build', function() {
-
-    describe('#buildPage', function() {
-
-      before(function() {
+describe('ppr', () => {
+  describe('#build', () => {
+    describe('#buildPage', () => {
+      before(() => {
         PPR.build();
       });
 
-      it('should save reference to active page instance', function() {
+      it('should save reference to active page instance', () => {
         chai.expect(PPR.page_instance).to.be.a('object');
       });
     });
   });
 
-  describe('#setConfig', function() {
-
-    it('should set configuration', function() {
-
-      var expectedConfiguration = 'testing';
+  describe('#setConfig', () => {
+    it('should set configuration', () => {
+      const expectedConfiguration = 'testing';
 
       PPR.setConfig({
-        test: expectedConfiguration
+        test: expectedConfiguration,
       });
 
       chai.assert.equal(expectedConfiguration, Config.get('test'));
     });
   });
 
-  describe('#loadConfig', function() {
-
-    describe('success', function() {
-      beforeEach(function() {
+  describe('#loadConfig', () => {
+    describe('success', () => {
+      beforeEach(() => {
         sinon.stub($, 'ajax').yieldsTo('success', {
-          testing: 'test'
+          testing: 'test',
         });
       });
 
-      afterEach(function() {
+      afterEach(() => {
         $.ajax.restore();
       });
 
-      it('should load configuration', function(done) {
-        PPR.loadConfig('config.json').then(function() {
+      it('should load configuration', (done) => {
+        PPR.loadConfig('config.json').then(() => {
           chai.assert.equal('test', Config.get('testing'));
           done();
         });
       });
     });
 
-    describe('failure', function() {
-
-      beforeEach(function() {
+    describe('failure', () => {
+      beforeEach(() => {
         sinon.stub($, 'ajax').yieldsTo('fail');
       });
 
-      afterEach(function() {
+      afterEach(() => {
         $.ajax.restore();
       });
 
-      it('should load configuration', function(done) {
-        PPR.loadConfig('config.json').fail(function(error) {
+      it('should load configuration', (done) => {
+        PPR.loadConfig('config.json').fail((error) => {
           chai.assert.equal(error, 'Load configuration failed');
           done();
         });
-      })
+      });
     });
   });
 });

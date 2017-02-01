@@ -1,14 +1,10 @@
 {
   "name": "ppr-js",
-  "version": "1.0.6",
+  "version": "2.0.0",
   "authors": [
     "Janne Savolainen"
   ],
   "description": "Lightweight javascript library for component functionality",
-  "keywords": [
-    "js",
-    "gulp"
-  ],
   "ignore": [
     "**/.*",
     "node_modules",
@@ -17,10 +13,9 @@
     "tests"
   ],
   "devDependencies": {
-    "jquery": "^3.0.0",
-    "lodash": "^4.13.1"
+    "jquery": "^1.11.0 || ^2.0.0 || ^3.0.0",
+    "lodash": "^4.0.0"
   },
-  "dependencies": {},
   "license": "MIT",
   "repository": {
     "type": "git",

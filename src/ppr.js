@@ -1,124 +1,82 @@
-(function(root, factory) {
+import $ from 'jquery';
+import _ from 'lodash';
+import UniversalLoader from 'ppr.library.utils.loader';
+import Config from 'ppr.config';
 
-  // AMD
-  // istanbul ignore next
-  if (typeof define === 'function' && define.amd) {
-    define('ppr', [
-      'jquery',
-      'lodash',
-      'ppr.library.utils.loader',
-      'ppr.config'
-    ], factory);
-  }
+export default {
 
-  // Node, CommonJS
-  else if (typeof exports === 'object') {
-    module.exports = factory(
-      require('jquery'),
-      require('lodash'),
-      require('./library/utils/loader'),
-      require('./ppr.config')
-    );
-  }
+  /**
+   * Build the library
+   */
+  build() {
+    this.buildPage();
+  },
 
-  // Browser globals
-  // istanbul ignore next
-  else {
-    root.ppr = root.vendor._.assign(root.ppr, factory(
-      root.vendor.$,
-      root.vendor._,
-      root.ppr.library.utils.loader,
-      root.ppr.config
-    ));
-  }
-})(this, function($, _, UniversalLoader, Config) {
+  /**
+   * Build page instance
+   */
+  buildPage() {
+    const node = $('body');
+    const params = {};
+    const loaderParams = {};
 
-  'use strict';
+    let namespace = 'ppr.page.baseprototype';
+    let name = node.attr('data-page');
 
-  return {
-
-    /**
-     * Build the library
-     */
-    build: function() {
-
-      this.buildPage();
-    },
-
-    /**
-     * Build page instance
-     */
-    buildPage: function() {
-
-      var _this = this,
-        namespace = 'ppr.page.base_prototype',
-        node = $('body'),
-        name = node.attr('data-page'),
-        params = {},
-        loaderParams = {};
-
-      // Custom instance required
-      if (typeof name !== 'undefined' && name.length > 0) {
-        namespace = 'ppr.page.' + _.snakeCase(name.trim());
-        loaderParams.custom = true;
-      } else {
-        name = 'base_prototype';
-      }
-
-      params.name = name;
-      params.node = node;
-
-      UniversalLoader.load(namespace, loaderParams, function(PagePrototype) {
-
-        // Instantiate prototype
-        var instance = PagePrototype.createPage({});
-
-        instance.initialize(params);
-
-        // Remember instance
-        _this.page_instance = instance;
-
-        // Build
-        instance.build();
-        instance.afterBuild();
-      });
-    },
-
-    /**
-     * Load configuration asynchronously
-     * @param {string} source url to load configuration
-     * @returns {Object} promise
-     */
-    loadConfig: function(source) {
-      var _this = this,
-        deferred = $.Deferred();
-
-      $.ajax({
-        dataType: 'json',
-        url: source,
-
-        success: function(response) {
-          _this.setConfig(response);
-          deferred.resolve(response);
-        },
-
-        fail: function() {
-          deferred.reject('Load configuration failed');
-        }
-      });
-
-      return deferred.promise();
-    },
-
-    /**
-     * Set configuration
-     * @param {Object} configs list of configurations
-     */
-    setConfig: function(configs) {
-
-      _.each(configs, function(value, key) {
-        Config.set(key, value);
-      });
+    // Custom instance required
+    if (typeof name !== 'undefined' && name.length > 0) {
+      namespace = `ppr.page.${_.replace(_.snakeCase(name.trim()), '_', '-')}`;
+      loaderParams.custom = true;
+    } else {
+      name = 'base_prototype';
     }
-  };
-});
+
+    params.name = name;
+
+    UniversalLoader.load(namespace, loaderParams, (PagePrototype) => {
+      const instance = new PagePrototype(node, params);
+
+      // Remember instance
+      this.page_instance = instance;
+
+      // Build
+      instance.build();
+      instance.afterBuild();
+    });
+  },
+
+  /**
+   * Load configuration asynchronously
+   * @param {string} source url to load configuration
+   * @returns {Object} promise
+   */
+  loadConfig(source) {
+    const deferred = $.Deferred();
+
+    $.ajax({
+      dataType: 'json',
+      url: source,
+
+      success: (response) => {
+        this.setConfig(response);
+        deferred.resolve(response);
+      },
+
+      fail: () => {
+        deferred.reject('Load configuration failed');
+      },
+    });
+
+    return deferred.promise();
+  },
+
+  /**
+   * Set configuration
+   * @param {Object} configs list of configurations
+   */
+  setConfig(configs) {
+    _.each(configs, (value, key) => {
+      Config.set(key, value);
+    });
+  },
+};

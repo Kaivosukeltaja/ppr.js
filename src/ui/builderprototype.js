@@ -1,63 +1,43 @@
-(function(root, factory) {
+import UniversalLoader from 'ppr.library.utils.loader';
 
-  // AMD
-  // istanbul ignore next
-  if (typeof define === 'function' && define.amd) {
-    define('ppr.ui.builder_prototype', [
-      'ppr.library.utils.loader',
-      'lodash'
-    ], factory);
+export default class BuilderPrototype {
+
+  build() { // eslint-disable-line
+    return false;
   }
 
-  // Node, CommonJS
-  else if (typeof exports === 'object') {
-    module.exports = factory(
-      require('../library/utils/loader'),
-      require('lodash')
-    );
-  }
-
-  // Browser globals
-  // istanbul ignore next
-  else {
-    root.ppr.ui.builder_prototype = factory(root.ppr.library.utils.loader, root.vendor._);
-  }
-})(this, function(UniversalLoader, _) {
-
-  'use strict';
-
-  return {
-
-    /**
-     * Initialize builder
-     * @returns {Boolean}
-     */
-    initialize: function() {
-      var _this = this;
-
-      if (!this.shouldBuild()) {
-        return false;
-      }
-
-      UniversalLoader.load(this.getDependencies(), { custom: true }, function() {
-        _this.build.apply(_this, Array.prototype.slice.call(arguments));
-      });
-    },
-
-    /**
-     * Check whether builder should build
-     * @returns {Boolean}
-     */
-    shouldBuild: function() {
-      return true;
-    },
-
-    /**
-     * Get list of dependencies to be loaded
-     * @returns {Object[]}
-     */
-    getDependencies: function() {
-      return [];
+  /**
+   * Initialize builder
+   * @returns {Boolean}
+   */
+  static initialize() {
+    if (!this.shouldBuild()) {
+      return false;
     }
-  };
-});
+
+    const targetDependencies = this.getDependencies();
+    const instance = new this();
+
+    UniversalLoader.load(targetDependencies, { custom: true }, (...dependencies) => {
+      instance.build(...dependencies);
+    });
+
+    return true;
+  }
+
+  /**
+   * Check whether builder should build
+   * @returns {Boolean}
+   */
+  static shouldBuild() { // eslint-disable-line
+    return true;
+  }
+
+  /**
+   * Get list of dependencies to be loaded
+   * @returns {Object[]}
+   */
+  static getDependencies() { // eslint-disable-line
+    return [];
+  }
+}

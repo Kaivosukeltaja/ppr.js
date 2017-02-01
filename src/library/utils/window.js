@@ -1,138 +1,101 @@
-(function(root, factory) {
+import $ from 'jquery';
+import _ from 'lodash';
+import Config from 'ppr.config';
 
-  // AMD
-  // istanbul ignore next
-  if (typeof define === 'function' && define.amd) {
-    define('ppr.library.utils.window', [
-      'ppr.config',
-      'jquery',
-      'lodash'
-    ], factory);
-  }
+export default {
 
-  // Node, CommonJS
-  else if (typeof exports === 'object') {
-    module.exports = factory(
-      require('../../ppr.config'),
-      require('jquery'),
-      require('lodash')
-    );
-  }
+  configList: $.extend(true, {
+    breakpoints: {},
+    mobile_breakpoints: [],
+  }, Config.get('window', {})),
 
-  // Browser globals
-  // istanbul ignore next
-  else {
-    root.ppr.library.utils.window = factory(root.ppr.config, root.vendor.$, root.vendor._);
-  }
-})(this, function(Config, $, _) {
+  /**
+   * Check whether given breakpoint exists
+   * @param {string} breakpoint target breakpoint
+   * @returns {Boolean}
+   */
+  isBreakpoint(breakpoint) {
+    return typeof this.configList.breakpoints[breakpoint] !== 'undefined';
+  },
 
-  'use strict';
+  /**
+   * Check whether current window matches to mobile breakpoint
+   * @returns {Boolean}
+   */
+  isMobile() {
+    let isMobile = false;
 
-  return {
-
-    configList: $.extend(true, {
-      breakpoints: {},
-      mobile_breakpoints: []
-    }, Config.get('window', {})),
-
-    /**
-     * Check whether given breakpoint exists
-     * @param {string} breakpoint target breakpoint
-     * @returns {Boolean}
-     */
-    isBreakpoint: function(breakpoint) {
-      return typeof this.configList.breakpoints[breakpoint] !== 'undefined';
-    },
-
-    /**
-     * Check whether current window matches to mobile breakpoint
-     * @returns {Boolean}
-     */
-    isMobile: function() {
-
-      var _this = this,
-        isMobile = false;
-
-      _.each(this.configList.mobile_breakpoints, function(breakpoint) {
-
-        if (!isMobile) {
-          isMobile = _this.matchBreakpoint(breakpoint);
-        }
-      });
-
-      return isMobile;
-    },
-
-    /**
-     * Check whether current window match to breakpoint
-     * @param {string} breakpoint name of breakpoint
-     * @returns {Boolean}
-     */
-    matchBreakpoint: function(breakpoint) {
-
-      // Breakpoint doesn't exist
-      if (!this.isBreakpoint(breakpoint)) {
-        return false;
+    _.each(this.configList.mobile_breakpoints, (breakpoint) => {
+      if (!isMobile) {
+        isMobile = this.matchBreakpoint(breakpoint);
       }
+    });
 
-      // Match media is not supported
-      if (typeof window.matchMedia !== 'function') {
-        return false;
-      }
+    return isMobile;
+  },
 
-      var breakpointDetails = this.configList.breakpoints[breakpoint],
-        targetWidth = _.replace(breakpointDetails, /[<>]/, '').trim();
-
-      // Smaller than
-      if (_.startsWith(breakpointDetails, '<')) {
-        return window.matchMedia('(max-width: ' + targetWidth + 'px)').matches;
-      }
-
-      // Bigger than
-      else if (_.startsWith(breakpointDetails, '>')) {
-        return window.matchMedia('(min-width: ' + targetWidth + 'px)').matches;
-
-      }
-
+  /**
+   * Check whether current window match to breakpoint
+   * @param {string} breakpoint name of breakpoint
+   * @returns {Boolean}
+   */
+  matchBreakpoint(breakpoint) {
+    // Breakpoint doesn't exist
+    if (!this.isBreakpoint(breakpoint)) {
       return false;
-    },
+    }
 
-    /**
-     * Get prefixed transformations
-     * @param  {string} transform
-     * @return {Object}
-     */
-    transformations: function(transform) {
+    // Match media is not supported
+    if (typeof window.matchMedia !== 'function') {
+      return false;
+    }
 
-      return {
-        '-webkit-transform': transform,
-        '-moz-transform': transform,
-        '-ms-transform': transform,
-        '-o-transform': transform,
-        transform: transform
-      };
-    },
+    const breakpointDetails = this.configList.breakpoints[breakpoint];
+    const targetWidth = _.replace(breakpointDetails, /[<>]/, '').trim();
 
-    /**
-     * Transition callback
-     * @returns {*}
-     */
-    whichTransitionEvent: function() {
+    if (_.startsWith(breakpointDetails, '<')) { // Smaller than
+      return window.matchMedia(`(max-width: ${targetWidth}px)`).matches;
+    } else if (_.startsWith(breakpointDetails, '>')) { // Bigger than
+      return window.matchMedia(`(min-width: ${targetWidth}px)`).matches;
+    }
 
-      var t,
-        el = document.createElement('fakeelement'),
-        transitions = {
-          transition: 'transitionend',
-          OTransition: 'oTransitionEnd',
-          MozTransition: 'transitionend',
-          WebkitTransition: 'webkitTransitionEnd'
-        };
+    return false;
+  },
 
-      for (t in transitions) {
-        if (el.style[t] !== undefined) {
-          return transitions[t];
-        }
+  /**
+   * Get prefixed transformations
+   * @param  {string} transform
+   * @return {Object}
+   */
+  transformations(transform) {
+    return {
+      '-webkit-transform': transform,
+      '-moz-transform': transform,
+      '-ms-transform': transform,
+      '-o-transform': transform,
+      transform,
+    };
+  },
+
+  /**
+   * Transition callback
+   */
+  whichTransitionEvent() {
+    const el = document.createElement('fakeelement');
+    const transitions = {
+      transition: 'transitionend',
+      OTransition: 'oTransitionEnd',
+      MozTransition: 'transitionend',
+      WebkitTransition: 'webkitTransitionEnd',
+    };
+
+    // eslint-disable-next-line
+    for (let a in transitions) {
+      if (el.style[a] !== undefined) {
+        return transitions[a];
       }
     }
-  };
-});
+
+    return null;
+  },
+};

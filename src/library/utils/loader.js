@@ -1,181 +1,85 @@
-(function(root, factory) {
+import _ from 'lodash';
+import Config from 'ppr.config';
 
-  // AMD
-  // istanbul ignore next
-  if (typeof define === 'function' && define.amd) {
-    define('ppr.library.utils.loader', [
-      'ppr.config',
-      'lodash'
-    ], factory);
-  }
+export default {
 
-  // Node, CommonJS
-  else if (typeof exports === 'object') {
-    module.exports = factory(
-      require('../../ppr.config'),
-      require('lodash')
-    );
-  }
+  isInitialized: false,
+  configList: {
+    supportAMD: true,
+    supportCommon: true,
+  },
 
-  // Browser globals
-  // istanbul ignore next
-  else {
-    root.ppr.library.utils.loader = factory(root.ppr.config, root.vendor._);
-  }
-})(this, function(Config, _) {
+  /**
+   * Check whether code supports AMD
+   * @returns {Boolean}
+   */
+  hasAMDSupport() {
+    return this.configList.supportAMD === true && typeof define === 'function' && define.amd;
+  },
 
-  'use strict';
+  /**
+   * Initialize
+   */
+  initialize() {
+    this.configList = _.extend(this.configList, Config.get('universal_loader', {}));
 
-  return {
+    // Mark as initialized
+    this.isInitialized = true;
+  },
 
-    bulkModules: null,
-    isInitialized: false,
-    configList: {
-      supportAMD: true,
-      supportCommon: true
-    },
-
-    /**
-     * Add bulk modules to cache
-     * @param {Object} modules
-     */
-    addBulkModules: function(modules) {
-
-      this.bulkModules = _.merge(this.getBulkModules(), modules);
-    },
-
-    /**
-     * Check whether code supports AMD
-     * @returns {Boolean}
-     */
-    hasAMDSupport: function() {
-      return this.configList.supportAMD === true && typeof define === 'function' && define.amd;
-    },
-
-    /**
-     * Check whether code supports CommonJS
-     * @returns {Boolean}
-     */
-    hasCommonSupport: function() {
-      return this.configList.supportCommon === true && typeof exports === 'object';
-    },
-
-    /**
-     * Get list of modules loaded with bulk style
-     */
-    getBulkModules: function() {
-
-      // Load bulk modules
-      if (this.bulkModules === null) {
-        this.bulkModules = this.loadBulkModules();
-      }
-
-      return this.bulkModules;
-    },
-
-    /**
-     * Initialize
-     */
-    initialize: function() {
-
-      this.configList = _.extend(this.configList, Config.get('universal_loader', {}));
-
-      // Mark as initialized
-      this.isInitialized = true;
-    },
-
-    /**
-     * Load dependency universally
-     * @param {Object[]|string} namespaces names of dependencies
-     * @param {Object}          config     list of configurations
-     * @param {function}        callback callback function
-     * @returns {*}
-     */
-    load: function(namespaces, config, callback) {
-
-      // Initialize once
-      if (!this.isInitialized) {
-        this.initialize();
-      }
-
-      var _this = this;
-
-      if (typeof callback !== 'function') {
-        throw new Error('Callback has to present');
-      }
-
-      // Turn single into array
-      if (typeof namespaces !== 'object') {
-        namespaces = [namespaces];
-      }
-
-      var dependencies = [];
-
-      // Use AMD
-      if (this.hasAMDSupport()) {
-
-        // Loading custom
-        if (config.custom === true) {
-          namespaces = _.map(namespaces, function(namespace) {
-
-            // Last dot is after last slash
-            if (namespace.lastIndexOf('.') > namespace.lastIndexOf('/')) {
-              namespace = namespace.split('.');
-
-              var className = namespace.pop();
-
-              namespace = namespace.join('.') + '/' + className;
-            }
-
-            return namespace;
-          });
-        }
-
-        return require(namespaces, callback);
-      }
-
-      // Use CommonJS
-      else if (this.hasCommonSupport()) {
-
-        _.each(namespaces, function(namespace) {
-
-          namespace = namespace.split('.');
-
-          // Remove first
-          namespace.shift();
-          namespace = _.map(namespace, _.camelCase);
-
-          dependencies.push(_.result(_this.getBulkModules(), namespace.join('.').toLowerCase().trim()));
-        });
-
-        return callback.apply(null, dependencies);
-      }
-
-      // Use globals
-      _.each(namespaces, function(namespace) {
-        dependencies.push(_.get(window, namespace));
-      });
-
-      return callback.apply(null, dependencies);
-    },
-
-    /**
-     * Load all files when using CommonJS
-     */
-    loadBulkModules: function() {
-
-      var result = {};
-
-      // No support for CommonJS or already loaded
-      if (!this.hasCommonSupport()) {
-        return result;
-      }
-
-      var bulk = require('bulk-require');
-
-      result = bulk(__dirname + '/../../', ['**/*.js']);
-
-      return result;
+  /**
+   * Load dependency universally
+   * @param {Object[]|string} namespaces names of dependencies
+   * @param {Object}          config     list of configurations
+   * @param {function}        callback callback function
+   * @returns {*}
+   */
+  load(namespaces, config, callback) {
+    if (!this.isInitialized) {
+      this.initialize();
     }
-  };
-});
+
+    let targetNamespaces = namespaces;
+
+    if (typeof callback !== 'function') {
+      throw new Error('Callback has to present');
+    }
+
+    // Turn single into array
+    if (typeof targetNamespaces !== 'object') {
+      targetNamespaces = [targetNamespaces];
+    }
+
+    const dependencies = [];
+
+    // Use AMD
+    if (this.hasAMDSupport()) {
+      if (config.custom === true) {
+        targetNamespaces = _.map(targetNamespaces, (namespace) => {
+          let targetNamespace = namespace;
+
+          // Last dot is after last slash
+          if (targetNamespace.lastIndexOf('.') > targetNamespace.lastIndexOf('/')) {
+            targetNamespace = targetNamespace.split('.');
+
+            const className = targetNamespace.pop();
+
+            targetNamespace = `${targetNamespace.join('.')}/${className}`;
+          }
+
+          return targetNamespace;
+        });
+      }
+
+      // eslint-disable-next-line import/no-dynamic-require, global-require
+      return require(targetNamespaces, callback);
+    }
+
+    // Use globals
+    _.each(targetNamespaces, (namespace) => {
+      dependencies.push(_.get(window, _.camelCase(namespace)));
+    });
+
+    return callback(...dependencies);
+  },
+};

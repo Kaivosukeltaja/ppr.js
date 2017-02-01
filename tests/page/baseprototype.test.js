@@ -1,82 +1,73 @@
-var BasePrototype = require('../../src/page/baseprototype'),
-  $ = require('jquery');
+import $ from 'jquery';
+import chai from 'chai';
+import sinon from 'sinon';
+import BasePrototype from 'ppr.page.baseprototype';
 
-describe('ppr.page.baseprototype', function() {
+/* eslint-disable no-unused-expressions */
+describe('ppr.page.baseprototype', () => {
+  let pageInstance;
 
-  'use strict';
-
-  var pageInstance;
-
-  before(function() {
-    pageInstance = new function() {
-      return _.cloneDeep(BasePrototype);
-    };
+  before(() => {
+    pageInstance = new BasePrototype($('body'));
   });
 
-  describe('#initialize', function() {
-
-    it('should initialize correctly', function() {
-      var pageName = 'testPage',
-        parameters;
-
-      parameters = {
+  describe('#initialize', () => {
+    it('should initialize correctly', () => {
+      const pageName = 'testPage';
+      const parameters = {
         name: 'testPage',
-        node: $('<div>').attr('data-page-data', '{"test": true}')
       };
 
-      chai.expect(pageInstance.initialize(parameters)).to.be.true;
-      chai.assert.equal(pageInstance.name, pageName);
-      chai.expect(pageInstance.data).to.have.property('test', true);
+      const targetNode = $('<div>').attr('data-page-data', '{"test": true}');
+      const targetPage = new BasePrototype(targetNode, parameters);
+
+      chai.assert.equal(targetPage.name, pageName);
+      chai.expect(targetPage.data).to.have.property('test', true);
     });
   });
 
-  describe('#build', function() {
-
-    it('should return true', function() {
+  describe('#build', () => {
+    it('should return true', () => {
       chai.expect(pageInstance.build()).to.be.true;
     });
   });
 
-  describe('#afterBuild', function() {
+  describe('#afterBuild', () => {
+    const buildComponentSpy = sinon.spy();
 
-    var buildComponentSpy = sinon.spy();
-
-    before(function() {
+    before(() => {
       pageInstance.afterBuild();
 
       pageInstance.eventBus.subscribe(null, 'build_component', buildComponentSpy);
     });
 
-    describe('#buildComponents', function() {
-
-      it('should not build components since there is none', function() {
+    describe('#buildComponents', () => {
+      it('should not build components since there is none', () => {
         chai.expect(buildComponentSpy.called).to.be.false;
       });
 
-      describe('normal component', function() {
+      describe('normal component', () => {
+        let componentNode;
 
-        var componentNode;
-
-        before(function() {
+        before(() => {
           componentNode = $('<div>')
             .attr('data-component', '')
             .appendTo(pageInstance.node);
         });
 
-        it('should trigger build component once', function() {
-
+        it('should trigger build component once', () => {
           pageInstance.buildComponents(pageInstance.node);
 
           chai.expect(buildComponentSpy.called).to.be.true;
 
-          var componentInstance = pageInstance.getComponent(componentNode.attr('data-component-id'));
+          const componentInstance = pageInstance.getComponent(componentNode.attr('data-component-id'));
 
           chai.expect(componentInstance).to.be.a('object');
           chai.assert.equal(componentInstance.name, 'base_prototype');
         });
 
-        it('should remove component', function() {
-          var componentId = componentNode.attr('data-component-id');
+        it('should remove component', () => {
+          const componentId = componentNode.attr('data-component-id');
           pageInstance.removeComponent(componentId);
           chai.expect(pageInstance.components[componentId]).to.be.undefined;
 
@@ -86,28 +77,25 @@ describe('ppr.page.baseprototype', function() {
         });
       });
 
-      describe('reloadable component', function() {
-
-        it('should use reloadableprototype if href is present', function() {
-          var componentNode = $('<div>')
+      describe('reloadable component', () => {
+        it('should use reloadableprototype if href is present', () => {
+          const componentNode = $('<div>')
             .attr('data-component', '')
             .attr('data-component-href', 'https://www.google.com')
             .appendTo(pageInstance.node);
 
           pageInstance.buildComponent(componentNode);
 
-          var componentInstance = pageInstance.getComponent(componentNode.attr('data-component-id'));
+          const componentInstance = pageInstance.getComponent(componentNode.attr('data-component-id'));
 
           chai.expect(componentInstance).to.be.a('object');
           chai.assert.equal(componentInstance.name, 'reloadable_prototype');
         });
       });
 
-      describe('component not found', function() {
-
-        it('should not build component if not found', function() {
-
-          var componentNode = $('<div>')
+      describe('component not found', () => {
+        it('should not build component if not found', () => {
+          const componentNode = $('<div>')
             .attr('data-component', 'testComponent')
             .appendTo(pageInstance.node);
 

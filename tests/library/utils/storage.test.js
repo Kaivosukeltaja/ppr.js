@@ -1,28 +1,27 @@
-var StorageUtils = require('../../../src/library/utils/storage');
+import chai from 'chai';
+import StorageUtils from 'ppr.library.utils.storage';
 
-describe('ppr.library.utils.storage', function() {
-
-  'use strict';
-
-  before(function() {
+/* eslint-disable no-unused-expressions */
+describe('ppr.library.utils.storage', () => {
+  before(() => {
     window.localStorage.clear();
   });
 
-  describe('#isSupported', function() {
-    it('should be supported', function() {
+  describe('#isSupported', () => {
+    it('should be supported', () => {
       chai.expect(StorageUtils.isSupported()).to.be.true;
     });
   });
 
-  describe('#set', function() {
-    it('should store normal variable into local storage', function() {
+  describe('#set', () => {
+    it('should store normal variable into local storage', () => {
       StorageUtils.set('test', 'testing');
 
       chai.assert.equal(window.localStorage.getItem('test'), 'testing');
     });
 
-    it('should store json object', function() {
-      var testObject = { test: true };
+    it('should store json object', () => {
+      const testObject = { test: true };
 
       StorageUtils.set('jsonObject', testObject);
 
@@ -30,14 +29,13 @@ describe('ppr.library.utils.storage', function() {
     });
   });
 
-  describe('#get', function() {
-    it('should allow getting variable', function() {
+  describe('#get', () => {
+    it('should allow getting variable', () => {
       chai.assert.equal(window.localStorage.getItem('test'), StorageUtils.get('test'));
     });
   });
 
-  it('should return null when not supported', function() {
-
+  it('should return null when not supported', () => {
     StorageUtils.configList.enabled = false;
 
     chai.assert.equal(StorageUtils.set('test', true), null);

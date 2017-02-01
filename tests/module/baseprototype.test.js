@@ -1,52 +1,33 @@
-var BasePrototype = require('../../src/module/baseprototype'),
-  EventBusPrototype = require('../../src/library/eventbusprototype'),
-  $ = require('jquery'),
-  _ = require('lodash');
+import _ from 'lodash';
+import chai from 'chai';
+import BasePrototype from 'ppr.module.baseprototype';
+import EventBusPrototype from 'ppr.library.eventbusprototype';
 
-describe('ppr.module.baseprototype', function() {
+/* eslint-disable no-unused-expressions */
+describe('ppr.module.baseprototype', () => {
+  const moduleConfiguration = {
+    testProperty: true,
+  };
 
-  'use strict';
+  const eventBusInstance = new EventBusPrototype();
+  const moduleInstance = BasePrototype;
+  moduleInstance.initialize(moduleConfiguration, eventBusInstance);
 
-  var moduleInstance,
-    eventBusInstance;
-
-  before(function() {
-    moduleInstance = new function() {
-      return $.extend(true, {}, BasePrototype, {});
-    };
-
-    eventBusInstance = new EventBusPrototype();
-  });
-
-  describe('#initialize', function() {
-
-    var configuration = {
-      testProperty: true
-    };
-
-    it('should initialize correctly', function() {
-      chai.expect(moduleInstance.initialize(configuration, eventBusInstance)).to.be.true;
-    });
-
-    it('should have instance of eventBus and given configuration', function() {
-      chai.assert.deepEqual(moduleInstance.configList, configuration);
+  describe('#initialize', () => {
+    it('should have instance of eventBus and given configuration', () => {
+      chai.assert.deepEqual(moduleInstance.configList, moduleConfiguration);
       chai.expect(moduleInstance.eventBus).to.be.a('object');
     });
-
-    it('should not initialize again', function() {
-      chai.expect(moduleInstance.initialize()).to.be.false;
-    });
   });
 
-  describe('#getMessages', function() {
-
-    before(function() {
+  describe('#getMessages', () => {
+    before(() => {
       moduleInstance.messages = {
-        MODULE_MESSAGE_1: 'module_message_1'
+        MODULE_MESSAGE_1: 'module_message_1',
       };
     });
 
-    it('should return list of messages', function() {
+    it('should return list of messages', () => {
       chai.expect(_.keys(moduleInstance.getMessages())).to.have.length(1);
     });
   });

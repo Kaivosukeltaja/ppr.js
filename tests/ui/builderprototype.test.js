@@ -1,51 +1,41 @@
-var BuilderPrototype = require('../../src/ui/builderprototype'),
-  $ = require('jquery');
+import sinon from 'sinon';
+import chai from 'chai';
+import BuilderPrototype from 'ppr.ui.builderprototype';
 
-describe('ppr.ui.builderprototype', function() {
+const buildSpy = sinon.spy();
 
-  'use strict';
+class SecondBuilder extends BuilderPrototype {
+  build() {
+    return buildSpy();
+  }
+}
 
-  var builderInstance,
-    buildSpy = sinon.spy();
+/* eslint-disable no-unused-expressions */
+describe('ppr.ui.builderprototype', () => {
+  const builderInstance = SecondBuilder;
 
-  before(function() {
-    builderInstance = $.extend(true, {}, BuilderPrototype, {
-
-      build: buildSpy
+  describe('#shouldBuild', () => {
+    it('should return true', () => {
+      chai.expect(builderInstance.shouldBuild()).to.be.true;
     });
   });
 
-  describe('#shouldBuild', function() {
-
-    it('should return true', function() {
-      chai.expect(builderInstance.shouldBuild()).to.be.true;
-    })
-  });
-
-  describe('#getDependencies', function() {
-
-    it('should return empty list of dependencies', function() {
+  describe('#getDependencies', () => {
+    it('should return empty list of dependencies', () => {
       chai.expect(builderInstance.getDependencies()).to.have.length(0);
     });
   });
 
-  describe('#initialize', function() {
-
-    it('should not build if shouldBuild returns false', function() {
-
-      // Override with false
-      builderInstance.shouldBuild = function() { return false; };
-
+  describe('#initialize', () => {
+    it('should not build if shouldBuild returns false', () => {
+      builderInstance.shouldBuild = () => false;
       chai.expect(builderInstance.initialize()).to.be.false;
 
-      // Return to original state
-      builderInstance.shouldBuild = function() { return true; };
+      builderInstance.shouldBuild = () => true;
     });
 
-    it('should trigger build function', function() {
-
+    it('should trigger build function', () => {
       builderInstance.initialize();
-
       chai.expect(buildSpy.called).to.be.true;
     });
   });

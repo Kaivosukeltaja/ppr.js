@@ -1,60 +1,32 @@
-var PageBasePrototype = require('../../src/page/baseprototype'),
-  ReloadablePrototype = require('../../src/component/reloadableprototype'),
-  $ = require('jquery'),
-  _ = require('lodash');
+import $ from 'jquery';
+import chai from 'chai';
+import sinon from 'sinon';
+import { getComponentNode, getComponentInstance, buildComponentInstance } from 'ppr.tests.helper.component';
+import { getPageInstance, buildPageInstance } from 'ppr.tests.helper.page';
 
-describe('ppr.component.reloadableprototype', function() {
+/* eslint-disable no-unused-expressions */
+describe('ppr.component.reloadableprototype', () => {
+  const pageNode = $('<div>');
+  const pageInstance = getPageInstance(pageNode);
 
-  'use strict';
+  buildPageInstance(pageInstance);
 
-  var pageNode = $('<div>'),
-    componentNode = $('<div>').attr('data-component', '').attr('data-component-href', '/test.html').appendTo(pageNode),
-    pageInstance,
-    componentInstance;
+  const componentNode = getComponentNode(pageInstance, false, '/test.html');
+  const componentInstance = getComponentInstance(pageInstance, componentNode);
 
-  before(function() {
-    pageInstance = new function() {
-      return PageBasePrototype.createPage({});
-    };
+  buildComponentInstance(componentInstance);
 
-    pageInstance.initialize({
-      node: pageNode,
-      name: 'base_prototype'
-    });
-
-    pageInstance.build();
-    pageInstance.afterBuild();
-
-    componentInstance = ReloadablePrototype.createComponent({});
-
-    componentInstance.initialize({
-      name: 'base_prototype',
-      node: componentNode,
-      eventBus: pageInstance.eventBus,
-      page: pageInstance,
-      id: _.uniqueId('ReloadableComponent_')
-    });
-
-    componentInstance.build();
-    componentInstance.afterBuild();
-
-    pageInstance.components[componentInstance.id] = pageInstance;
-  });
-
-  describe('#reload', function() {
-
-    before(function() {
+  describe('#reload', () => {
+    before(() => {
       sinon.stub($, 'get').returns($.Deferred().resolve('<div class="reloadedComponent" data-component></div>').promise());
     });
 
-    after(function() {
+    after(() => {
       $.get.restore();
     });
 
-    it('should reload component html', function(done) {
-
-      componentInstance.eventBus.subscribe(null, 'component_build_finished', function(componentId) {
-
+    it('should reload component html', (done) => {
+      componentInstance.eventBus.subscribe(null, 'component_build_finished', (componentId) => {
         if (componentId === componentInstance.id) {
           chai.expect(pageInstance.getComponent(componentId).node.hasClass('reloadedComponent')).to.be.true;
           done();
@@ -63,15 +35,5 @@ describe('ppr.component.reloadableprototype', function() {
 
       componentInstance.reload();
     });
-
-
-  });
-
-  describe('#onReloadStarted', function() {
-
-  });
-
-  describe('#onReloadReady', function() {
-
   });
 });

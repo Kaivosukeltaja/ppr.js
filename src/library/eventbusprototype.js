@@ -1,225 +1,227 @@
-(function(root, factory) {
+import _ from 'lodash';
+import Config from 'ppr.config';
 
-  // AMD
-  // istanbul ignore next
-  if (typeof define === 'function' && define.amd) {
-    define('ppr.library.event_bus_prototype', [
-      'ppr.config',
-      'jquery',
-      'lodash'
-    ], factory);
-  }
-
-  // Node, CommonJS
-  else if (typeof exports === 'object') {
-    module.exports = factory(
-      require('../ppr.config'),
-      require('jquery'),
-      require('lodash'));
-  }
-
-  // Browser globals
-  // istanbul ignore next
-  else {
-    root.ppr.library.event_bus_prototype = factory(root.ppr.config, root.vendor.$, root.vendor._);
-  }
-})(this, function(Config, $, _) {
-
-  'use strict';
-
-  /**
-   * EventBus constructor
-   * @constructor
-   */
-  var EventBus = function() {
-
+/**
+ * EventBus constructor
+ * @constructor
+ */
+export default class EventBus {
+  constructor() {
     this.eventList = {};
     this.messageIndex = {};
-  };
+  }
 
-  EventBus.prototype = {
+  /**
+   * Get list of all events available
+   * @returns {Object[]}
+   */
+  getEvents() {
+    return this.eventList;
+  }
 
-    /**
-     * Get list of all events available
-     * @returns {Object[]}
-     */
-    getEvents: function() {
-      return this.eventList;
-    },
+  /**
+   * Get events by message
+   * @param {string} message target message
+   * @returns {Object}
+   */
+  getEventsByMessage(message) {
+    return typeof this.eventList[message] !== 'undefined' ?
+      this.eventList[message] : {};
+  }
 
-    /**
-     * Get events by message
-     * @param {string} message target message
-     * @returns {Object}
-     */
-    getEventsByMessage: function(message) {
+  /**
+   * Get events by scope
+   * @param {Object} scope target scope
+   * @returns {Object} list of events
+   */
+  getEventsByScope(scope) {
+    const result = {};
 
-      return typeof this.eventList[message] !== 'undefined' ?
-        this.eventList[message] : {};
-    },
+    _.each(this.getEvents(), (subscribers, message) => {
+      const messageSubscribers = {};
 
-    /**
-     * Log actions into console
-     * @param {string} action  target action
-     * @param {string} message target message
-     * @param {...*}  [data]   data to be logged
-     */
-    log: function(action, message, data) {
-
-      // Logging is disabled
-      if (Config.get('event_bus.debug', false) !== true) {
-        return false;
-      }
-
-      // Remove first 2 items
-      var parameters = Array.prototype.slice.call(arguments).splice(2, 2);
-
-      switch (action) {
-        case 'subscribe': {
-          console.log('subscribe to event "' + message + '"', parameters);
-          break;
-        }
-
-        case 'unsubscribe': {
-          console.log('unsubscribe from event "' + message + '"', parameters);
-          break;
-        }
-
-        case 'publish': {
-          console.log('publish event "' + message + '"', parameters);
-          break;
-        }
-      }
-    },
-
-    /**
-     * Subscribe to given event
-     * @param {Object}   scope    target scope
-     * @param {string}   message  target event name
-     * @param {Function} callback function to be called
-     * @param {string}   [name]   custom name for subscriber
-     * @returns {string}
-     */
-    subscribe: function(scope, message, callback, name) {
-
-      // Initialize array for message
-      if (typeof this.eventList[message] === 'undefined') {
-        this.eventList[message] = {};
-      }
-
-      var subscriberId = _.uniqueId(message);
-
-      this.log('subscribe', message, subscriberId, scope);
-
-      this.eventList[message][subscriberId] = {
-        scope: scope,
-        callback: callback,
-        name: name || subscriberId
-      };
-
-      // Remember message for easy searching
-      this.messageIndex[subscriberId] = message;
-
-      return subscriberId;
-    },
-
-    /**
-     * Unsubscribe from event
-     * @param {string[]} subscriberId target subscriber id
-     * @returns {Boolean} operation outcome
-     */
-    unsubscribe: function(subscriberId) {
-
-      // Turn into array
-      if (typeof subscriberId === 'string') {
-        subscriberId = [subscriberId];
-      }
-
-      var _this = this;
-
-      _.each(subscriberId, function(id) {
-
-        // No message found
-        if (typeof _this.messageIndex[id] === 'undefined') {
-          return false;
-        }
-
-        var message = _this.messageIndex[id];
-
-        _this.log('unsubscribe', message, subscriberId);
-
-        // No message found
-        if (typeof _this.eventList[message][id] === 'undefined') {
-          return false;
-        }
-
-        delete _this.eventList[message][id];
-
-        // Remove empty list
-        if (_.keys(_this.eventList[message]).length === 0) {
-          delete _this.eventList[message];
+      _.each(subscribers, (subscriber, subscriberId) => {
+        if (_.isEqual(subscriber.scope, scope)) {
+          messageSubscribers[subscriberId] = subscriber;
         }
       });
 
-      return true;
-    },
-
-    /**
-     * Publish event
-     * @param {string} message
-     * @param {...*}   data
-     * @returns {boolean}
-     */
-    publish: function(message, data) {
-
-      // No subscribers found
-      if (typeof this.eventList[message] === 'undefined') {
-        return false;
+      if (Object.keys(messageSubscribers).length > 0) {
+        result[message] = messageSubscribers;
       }
+    });
 
-      var parameters = Array.prototype.slice.call(arguments);
+    return result;
+  }
 
-      // Add subscriber names to parameters
-      parameters.unshift(_.map(this.eventList[message], 'name'));
-
-      return this.publishTo.apply(this, parameters);
-    },
-
-    /**
-     * Publish event to given subscribers
-     * @param {string|Object[]} target  list of target subscribers names
-     * @param {string}          message target message
-     * @param {...*}            data    data to be passed to subscriber
-     * @returns {boolean}
-     */
-    publishTo: function(target, message, data) {
-
-      // No subscribers found
-      if (typeof this.eventList[message] === 'undefined') {
-        return false;
-      }
-
-      // Turn target into array
-      if (typeof target === 'string') {
-        target = [target];
-      }
-
-      var messageData = Array.prototype.slice.call(arguments).splice(2),
-        targetSubscribers;
-
-      // Filter list of subscribers
-      targetSubscribers = _.filter(this.eventList[message], function(subscriber) {
-        return _.indexOf(target, subscriber.name) > -1;
-      });
-
-      this.log('publish', message, messageData, _.map(targetSubscribers, 'scope'));
-
-      // Loop through subscribers
-      _.each(targetSubscribers, function(subscriber) {
-        subscriber.callback.apply(subscriber.scope, messageData);
-      });
+  /**
+   * Log actions into console
+   * @param {string} action  target action
+   * @param {string} message target message
+   * @param {...*}  [data]   data to be logged
+   */
+  static log(action, message, ...data) {
+    if (Config.get('event_bus.debug', false) !== true) {
+      return;
     }
-  };
 
-  return EventBus;
-});
+    switch (action) {
+      case 'subscribe': {
+        console.log(`subscribe to event "${message}"`, data); // eslint-disable-line no-console
+        break;
+      }
+
+      case 'unsubscribe': {
+        console.log(`unsubscribe from event "${message}"`, data); // eslint-disable-line no-console
+        break;
+      }
+
+      case 'publish': {
+        console.log(`publish event "${message}"`, data); // eslint-disable-line no-console
+        break;
+      }
+
+      default: {
+        break;
+      }
+    }
+  }
+
+  /**
+   * Subscribe to given event
+   * @param {Object}   scope    target scope
+   * @param {string}   message  target event name
+   * @param {Function} callback function to be called
+   * @param {string}   [name]   custom name for subscriber
+   * @returns {string}
+   */
+  subscribe(scope, message, callback, name) {
+    if (typeof this.eventList[message] === 'undefined') {
+      this.eventList[message] = {};
+    }
+
+    const subscriberId = _.uniqueId(message);
+
+    EventBus.log('subscribe', message, subscriberId, scope);
+
+    this.eventList[message][subscriberId] = {
+      scope,
+      callback,
+      name: name || subscriberId,
+    };
+
+    // Remember message for easy searching
+    this.messageIndex[subscriberId] = message;
+
+    return subscriberId;
+  }
+
+  /**
+   * Unsubscribe from event
+   * @param {string[]} subscriberId target subscriber id
+   * @returns {Boolean} operation outcome
+   */
+  unsubscribe(subscriberId) {
+    let targetSubscriberId = subscriberId;
+
+    if (typeof targetSubscriberId === 'string') {
+      targetSubscriberId = [targetSubscriberId];
+    }
+
+    _.each(targetSubscriberId, (id) => {
+      if (typeof this.messageIndex[id] === 'undefined') {
+        return;
+      }
+
+      const message = this.messageIndex[id];
+
+      EventBus.log('unsubscribe', message, targetSubscriberId);
+
+      // No message found
+      if (typeof this.eventList[message][id] === 'undefined') {
+        return;
+      }
+
+      delete this.eventList[message][id];
+
+      // Remove empty list
+      if (_.keys(this.eventList[message]).length === 0) {
+        delete this.eventList[message];
+      }
+    });
+
+    return true;
+  }
+
+  /**
+   * Unsubscribe events by given scope and message
+   * @param {Object} scope   target scope
+   * @param {string} message target message
+   */
+  unsubscribeByScopeAndMessage(scope, message) {
+    const events = this.getEventsByScope(scope);
+
+    if (!Object.prototype.hasOwnProperty.call(events, message)) {
+      return false;
+    }
+
+    return this.unsubscribe(Object.keys(events[message]));
+  }
+
+  /**
+   * Unsubscribe all events by given scope
+   * @param {Object} scope target scope
+   */
+  unsubscribeByScope(scope) {
+    return Object.keys(this.getEventsByScope(scope))
+      .map(message => this.unsubscribeByScopeAndMessage(scope, message));
+  }
+
+  /**
+   * Publish event
+   * @param {string} message
+   * @param {...*}   data
+   * @returns {boolean}
+   */
+  publish(message, ...data) {
+    if (typeof this.eventList[message] === 'undefined') {
+      return false;
+    }
+
+    return this.publishTo(_.map(this.eventList[message], 'name'), message, ...data);
+  }
+
+  /**
+   * Publish event to given subscribers
+   * @param {string|Object[]} target  list of target subscribers names
+   * @param {string}          message target message
+   * @param {...*}            data    data to be passed to subscriber
+   * @returns {boolean}
+   */
+  publishTo(target, message, ...data) {
+    let targetSubscribers = target;
+
+    if (typeof this.eventList[message] === 'undefined') {
+      return false;
+    }
+
+    // Turn target into array
+    if (typeof targetSubscribers === 'string') {
+      targetSubscribers = [targetSubscribers];
+    }
+
+    // Filter list of subscribers
+    targetSubscribers = _.filter(this.eventList[message], subscriber => (
+      _.indexOf(targetSubscribers, subscriber.name) > -1
+    ));
+
+    EventBus.log('publish', message, data, _.map(targetSubscribers, 'scope'));
+
+    // Loop through subscribers
+    _.each(targetSubscribers, (subscriber) => {
+      subscriber.callback.apply(subscriber.scope, data);
+    });
+
+    return true;
+  }
+}

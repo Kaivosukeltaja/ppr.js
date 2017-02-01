@@ -1,42 +1,33 @@
-(function() {
+(function (global, factory) {
+  if (typeof define === "function" && define.amd) {
+    define('ppr.config', ['module', 'exports', 'lodash'], factory);
+  } else if (typeof exports !== "undefined") {
+    factory(module, exports, require('lodash'));
+  } else {
+    var mod = {
+      exports: {}
+    };
+    factory(mod, mod.exports, global._);
+    global.pprConfig = mod.exports;
+  }
+})(this, function (module, exports, _lodash) {
   'use strict';
 
-  // Required when using globals
-  if (typeof define === 'undefined' && typeof exports === 'undefined') {
-    window.ppr = { page: {}, component: {}, library: { utils: {} }, module: { model: {} }, ui: {} };
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
 
-    // Use noConflict versions
-    window.vendor = {};
-    window.vendor.$ = window.$.noConflict();
-    window.vendor._ = window._.noConflict();
+  var _lodash2 = _interopRequireDefault(_lodash);
+
+  function _interopRequireDefault(obj) {
+    return obj && obj.__esModule ? obj : {
+      default: obj
+    };
   }
-})();
-
-(function(root, factory) {
-
-  // AMD
-  // istanbul ignore next
-  if (typeof define === 'function' && define.amd) {
-    define('ppr.config', ['lodash'], factory);
-  }
-
-  // Node, CommonJS
-  else if (typeof exports === 'object') {
-    module.exports = factory(require('lodash'));
-  }
-
-  // Browser globals
-  // istanbul ignore next
-  else {
-    root.ppr.config = factory(root.vendor._);
-  }
-})(this, function(_) {
-
-  'use strict';
 
   var configList = {};
 
-  return {
+  exports.default = {
 
     /**
      * Get configuration by name
@@ -44,25 +35,26 @@
      * @param {*}      defaultValue defaultValue to be used when configuration is not found
      * @returns {*} configuration value
      */
-    get: function(name, defaultValue) {
-      return _.result(configList, name, defaultValue);
+    get: function get(name, defaultValue) {
+      return _lodash2.default.result(configList, name, defaultValue);
     },
+
 
     /**
      * Get list of configurations
      * @returns {Object}
      */
-    getAll: function() {
+    getAll: function getAll() {
       return configList;
     },
+
 
     /**
      * Set configuration
      * @param {Object[]|string} configs list of configuration or name of single configuration
      * @param {*}               [value] single configuration value
      */
-    set: function(configs, value) {
-
+    set: function set(configs, value) {
       var list = configs;
 
       if (typeof configs === 'string') {
@@ -70,395 +62,322 @@
         list[configs] = value;
       }
 
-      _.each(list, function(value, name) {
-        _.set(configList, name, value);
+      _lodash2.default.each(list, function (listValue, name) {
+        _lodash2.default.set(configList, name, listValue);
       });
     },
+
 
     /**
      * Reset configurations
      */
-    reset: function() {
+    reset: function reset() {
       configList = {};
     }
   };
+  module.exports = exports['default'];
 });
-
-(function(root, factory) {
-
-  // AMD
-  // istanbul ignore next
-  if (typeof define === 'function' && define.amd) {
-    define('ppr.library.event_bus_prototype', [
-      'ppr.config',
-      'jquery',
-      'lodash'
-    ], factory);
+(function (global, factory) {
+  if (typeof define === "function" && define.amd) {
+    define('ppr.library.eventbusprototype', ['module', 'exports', 'lodash', 'ppr.config'], factory);
+  } else if (typeof exports !== "undefined") {
+    factory(module, exports, require('lodash'), require('ppr.config'));
+  } else {
+    var mod = {
+      exports: {}
+    };
+    factory(mod, mod.exports, global._, global.pprConfig);
+    global.pprLibraryEventbusprototype = mod.exports;
   }
-
-  // Node, CommonJS
-  else if (typeof exports === 'object') {
-    module.exports = factory(
-      require('../ppr.config'),
-      require('jquery'),
-      require('lodash'));
-  }
-
-  // Browser globals
-  // istanbul ignore next
-  else {
-    root.ppr.library.event_bus_prototype = factory(root.ppr.config, root.vendor.$, root.vendor._);
-  }
-})(this, function(Config, $, _) {
-
+})(this, function (module, exports, _lodash, _ppr) {
   'use strict';
 
-  /**
-   * EventBus constructor
-   * @constructor
-   */
-  var EventBus = function() {
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
 
-    this.eventList = {};
-    this.messageIndex = {};
-  };
+  var _lodash2 = _interopRequireDefault(_lodash);
 
-  EventBus.prototype = {
+  var _ppr2 = _interopRequireDefault(_ppr);
+
+  function _interopRequireDefault(obj) {
+    return obj && obj.__esModule ? obj : {
+      default: obj
+    };
+  }
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var _createClass = function () {
+    function defineProperties(target, props) {
+      for (var i = 0; i < props.length; i++) {
+        var descriptor = props[i];
+        descriptor.enumerable = descriptor.enumerable || false;
+        descriptor.configurable = true;
+        if ("value" in descriptor) descriptor.writable = true;
+        Object.defineProperty(target, descriptor.key, descriptor);
+      }
+    }
+
+    return function (Constructor, protoProps, staticProps) {
+      if (protoProps) defineProperties(Constructor.prototype, protoProps);
+      if (staticProps) defineProperties(Constructor, staticProps);
+      return Constructor;
+    };
+  }();
+
+  var EventBus = function () {
+    function EventBus() {
+      _classCallCheck(this, EventBus);
+
+      this.eventList = {};
+      this.messageIndex = {};
+    }
 
     /**
      * Get list of all events available
      * @returns {Object[]}
      */
-    getEvents: function() {
-      return this.eventList;
-    },
 
-    /**
-     * Get events by message
-     * @param {string} message target message
-     * @returns {Object}
-     */
-    getEventsByMessage: function(message) {
 
-      return typeof this.eventList[message] !== 'undefined' ?
-        this.eventList[message] : {};
-    },
-
-    /**
-     * Log actions into console
-     * @param {string} action  target action
-     * @param {string} message target message
-     * @param {...*}  [data]   data to be logged
-     */
-    log: function(action, message, data) {
-
-      // Logging is disabled
-      if (Config.get('event_bus.debug', false) !== true) {
-        return false;
+    _createClass(EventBus, [{
+      key: 'getEvents',
+      value: function getEvents() {
+        return this.eventList;
       }
+    }, {
+      key: 'getEventsByMessage',
+      value: function getEventsByMessage(message) {
+        return typeof this.eventList[message] !== 'undefined' ? this.eventList[message] : {};
+      }
+    }, {
+      key: 'getEventsByScope',
+      value: function getEventsByScope(scope) {
+        var result = {};
 
-      // Remove first 2 items
-      var parameters = Array.prototype.slice.call(arguments).splice(2, 2);
+        _lodash2.default.each(this.getEvents(), function (subscribers, message) {
+          var messageSubscribers = {};
 
-      switch (action) {
-        case 'subscribe': {
-          console.log('subscribe to event "' + message + '"', parameters);
-          break;
+          _lodash2.default.each(subscribers, function (subscriber, subscriberId) {
+            if (_lodash2.default.isEqual(subscriber.scope, scope)) {
+              messageSubscribers[subscriberId] = subscriber;
+            }
+          });
+
+          if (Object.keys(messageSubscribers).length > 0) {
+            result[message] = messageSubscribers;
+          }
+        });
+
+        return result;
+      }
+    }, {
+      key: 'subscribe',
+      value: function subscribe(scope, message, callback, name) {
+        if (typeof this.eventList[message] === 'undefined') {
+          this.eventList[message] = {};
         }
 
-        case 'unsubscribe': {
-          console.log('unsubscribe from event "' + message + '"', parameters);
-          break;
+        var subscriberId = _lodash2.default.uniqueId(message);
+
+        EventBus.log('subscribe', message, subscriberId, scope);
+
+        this.eventList[message][subscriberId] = {
+          scope: scope,
+          callback: callback,
+          name: name || subscriberId
+        };
+
+        // Remember message for easy searching
+        this.messageIndex[subscriberId] = message;
+
+        return subscriberId;
+      }
+    }, {
+      key: 'unsubscribe',
+      value: function unsubscribe(subscriberId) {
+        var _this = this;
+
+        var targetSubscriberId = subscriberId;
+
+        if (typeof targetSubscriberId === 'string') {
+          targetSubscriberId = [targetSubscriberId];
         }
 
-        case 'publish': {
-          console.log('publish event "' + message + '"', parameters);
-          break;
-        }
+        _lodash2.default.each(targetSubscriberId, function (id) {
+          if (typeof _this.messageIndex[id] === 'undefined') {
+            return;
+          }
+
+          var message = _this.messageIndex[id];
+
+          EventBus.log('unsubscribe', message, targetSubscriberId);
+
+          // No message found
+          if (typeof _this.eventList[message][id] === 'undefined') {
+            return;
+          }
+
+          delete _this.eventList[message][id];
+
+          // Remove empty list
+          if (_lodash2.default.keys(_this.eventList[message]).length === 0) {
+            delete _this.eventList[message];
+          }
+        });
+
+        return true;
       }
-    },
+    }, {
+      key: 'unsubscribeByScopeAndMessage',
+      value: function unsubscribeByScopeAndMessage(scope, message) {
+        var events = this.getEventsByScope(scope);
 
-    /**
-     * Subscribe to given event
-     * @param {Object}   scope    target scope
-     * @param {string}   message  target event name
-     * @param {Function} callback function to be called
-     * @param {string}   [name]   custom name for subscriber
-     * @returns {string}
-     */
-    subscribe: function(scope, message, callback, name) {
-
-      // Initialize array for message
-      if (typeof this.eventList[message] === 'undefined') {
-        this.eventList[message] = {};
-      }
-
-      var subscriberId = _.uniqueId(message);
-
-      this.log('subscribe', message, subscriberId, scope);
-
-      this.eventList[message][subscriberId] = {
-        scope: scope,
-        callback: callback,
-        name: name || subscriberId
-      };
-
-      // Remember message for easy searching
-      this.messageIndex[subscriberId] = message;
-
-      return subscriberId;
-    },
-
-    /**
-     * Unsubscribe from event
-     * @param {string[]} subscriberId target subscriber id
-     * @returns {Boolean} operation outcome
-     */
-    unsubscribe: function(subscriberId) {
-
-      // Turn into array
-      if (typeof subscriberId === 'string') {
-        subscriberId = [subscriberId];
-      }
-
-      var _this = this;
-
-      _.each(subscriberId, function(id) {
-
-        // No message found
-        if (typeof _this.messageIndex[id] === 'undefined') {
+        if (!Object.prototype.hasOwnProperty.call(events, message)) {
           return false;
         }
 
-        var message = _this.messageIndex[id];
+        return this.unsubscribe(Object.keys(events[message]));
+      }
+    }, {
+      key: 'unsubscribeByScope',
+      value: function unsubscribeByScope(scope) {
+        var _this2 = this;
 
-        _this.log('unsubscribe', message, subscriberId);
-
-        // No message found
-        if (typeof _this.eventList[message][id] === 'undefined') {
+        return Object.keys(this.getEventsByScope(scope)).map(function (message) {
+          return _this2.unsubscribeByScopeAndMessage(scope, message);
+        });
+      }
+    }, {
+      key: 'publish',
+      value: function publish(message) {
+        if (typeof this.eventList[message] === 'undefined') {
           return false;
         }
 
-        delete _this.eventList[message][id];
-
-        // Remove empty list
-        if (_.keys(_this.eventList[message]).length === 0) {
-          delete _this.eventList[message];
+        for (var _len = arguments.length, data = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+          data[_key - 1] = arguments[_key];
         }
-      });
 
-      return true;
-    },
-
-    /**
-     * Publish event
-     * @param {string} message
-     * @param {...*}   data
-     * @returns {boolean}
-     */
-    publish: function(message, data) {
-
-      // No subscribers found
-      if (typeof this.eventList[message] === 'undefined') {
-        return false;
+        return this.publishTo.apply(this, [_lodash2.default.map(this.eventList[message], 'name'), message].concat(data));
       }
+    }, {
+      key: 'publishTo',
+      value: function publishTo(target, message) {
+        for (var _len2 = arguments.length, data = Array(_len2 > 2 ? _len2 - 2 : 0), _key2 = 2; _key2 < _len2; _key2++) {
+          data[_key2 - 2] = arguments[_key2];
+        }
 
-      var parameters = Array.prototype.slice.call(arguments);
+        var targetSubscribers = target;
 
-      // Add subscriber names to parameters
-      parameters.unshift(_.map(this.eventList[message], 'name'));
+        if (typeof this.eventList[message] === 'undefined') {
+          return false;
+        }
 
-      return this.publishTo.apply(this, parameters);
-    },
+        // Turn target into array
+        if (typeof targetSubscribers === 'string') {
+          targetSubscribers = [targetSubscribers];
+        }
 
-    /**
-     * Publish event to given subscribers
-     * @param {string|Object[]} target  list of target subscribers names
-     * @param {string}          message target message
-     * @param {...*}            data    data to be passed to subscriber
-     * @returns {boolean}
-     */
-    publishTo: function(target, message, data) {
+        // Filter list of subscribers
+        targetSubscribers = _lodash2.default.filter(this.eventList[message], function (subscriber) {
+          return _lodash2.default.indexOf(targetSubscribers, subscriber.name) > -1;
+        });
 
-      // No subscribers found
-      if (typeof this.eventList[message] === 'undefined') {
-        return false;
+        EventBus.log('publish', message, data, _lodash2.default.map(targetSubscribers, 'scope'));
+
+        // Loop through subscribers
+        _lodash2.default.each(targetSubscribers, function (subscriber) {
+          subscriber.callback.apply(subscriber.scope, data);
+        });
+
+        return true;
       }
+    }], [{
+      key: 'log',
+      value: function log(action, message) {
+        if (_ppr2.default.get('event_bus.debug', false) !== true) {
+          return;
+        }
 
-      // Turn target into array
-      if (typeof target === 'string') {
-        target = [target];
+        for (var _len3 = arguments.length, data = Array(_len3 > 2 ? _len3 - 2 : 0), _key3 = 2; _key3 < _len3; _key3++) {
+          data[_key3 - 2] = arguments[_key3];
+        }
+
+        switch (action) {
+          case 'subscribe':
+            {
+              console.log('subscribe to event "' + message + '"', data); // eslint-disable-line no-console
+              break;
+            }
+
+          case 'unsubscribe':
+            {
+              console.log('unsubscribe from event "' + message + '"', data); // eslint-disable-line no-console
+              break;
+            }
+
+          case 'publish':
+            {
+              console.log('publish event "' + message + '"', data); // eslint-disable-line no-console
+              break;
+            }
+
+          default:
+            {
+              break;
+            }
+        }
       }
+    }]);
 
-      var messageData = Array.prototype.slice.call(arguments).splice(2),
-        targetSubscribers;
+    return EventBus;
+  }();
 
-      // Filter list of subscribers
-      targetSubscribers = _.filter(this.eventList[message], function(subscriber) {
-        return _.indexOf(target, subscriber.name) > -1;
-      });
-
-      this.log('publish', message, messageData, _.map(targetSubscribers, 'scope'));
-
-      // Loop through subscribers
-      _.each(targetSubscribers, function(subscriber) {
-        subscriber.callback.apply(subscriber.scope, messageData);
-      });
-    }
-  };
-
-  return EventBus;
+  exports.default = EventBus;
+  module.exports = exports['default'];
 });
-
-(function(root, factory) {
-
-  // AMD
-  // istanbul ignore next
-  if (typeof define === 'function' && define.amd) {
-    define('ppr.library.utils.date', ['ppr.translation'], factory);
+(function (global, factory) {
+  if (typeof define === "function" && define.amd) {
+    define('ppr.library.utils.loader', ['module', 'exports', 'lodash', 'ppr.config'], factory);
+  } else if (typeof exports !== "undefined") {
+    factory(module, exports, require('lodash'), require('ppr.config'));
+  } else {
+    var mod = {
+      exports: {}
+    };
+    factory(mod, mod.exports, global._, global.pprConfig);
+    global.pprLibraryUtilsLoader = mod.exports;
   }
-
-  // Node, CommonJS
-  else if (typeof exports === 'object') {
-    module.exports = factory(require('../../ppr.translation'));
-  }
-
-  // Browser globals
-  // istanbul ignore next
-  else {
-    root.ppr.library.utils.date = factory(root.ppr.translation);
-  }
-})(this, function(Translation) {
-
+})(this, function (module, exports, _lodash, _ppr) {
   'use strict';
 
-  return {
-    /**
-     * Get string as date object
-     * @param {string|number} dateString
-     * @returns {Object} date object
-     */
-    getAsDate: function(dateString) {
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
 
-      // Already resolved
-      if (typeof dateString === 'object') {
-        return dateString;
-      }
+  var _lodash2 = _interopRequireDefault(_lodash);
 
-      // Already a number
-      if (typeof dateString === 'number') {
-        return new Date(dateString);
-      }
+  var _ppr2 = _interopRequireDefault(_ppr);
 
-      var match;
+  function _interopRequireDefault(obj) {
+    return obj && obj.__esModule ? obj : {
+      default: obj
+    };
+  }
 
-      // Format: 2016-03-31 13:00:00
-      if (match = dateString.match(/^([0-9]{4})-([0-9]{2})-([0-9]{2}) ([0-9]{2}):([0-9]{2}):([0-9]{2})$/, 'g')) {
-        return new Date(match[1], match[2] - 1, match[3], match[4], match[5], match[6]);
-      }
-
-      // Format: 31.03.2016 13:00:00
-      // Format: 31.3.2016 5:00:00
-      if (match = dateString.match(/^([0-9]{2}).([0-9]{1,2}).([0-9]{4}) ([0-9]{1,2}):([0-9]{2}):([0-9]{2})$/, 'g')) {
-        return new Date(match[3], match[2] - 1, match[1], match[4], match[5], match[6]);
-      }
-
-      return new Date(dateString);
-    },
-
-    /**
-     * Calculate difference between 2 dates
-     * @param {Object|string} toDate
-     * @param {Object|string} [fromDate]
-     * @returns {number}
-     */
-    getDifference: function(toDate, fromDate) {
-
-      // Default value is current datetime
-      if (typeof fromDate === 'undefined') {
-        fromDate = new Date();
-      }
-
-      toDate = this.getAsDate(toDate);
-      fromDate = this.getAsDate(fromDate);
-
-      // Return in seconds
-      return (fromDate.getTime() - toDate.getTime()) / 1000;
-    },
-
-    /**
-     * Get time as difference string
-     * @param {number} time in milliseconds
-     * @returns {string}
-     */
-    getAsDifferenceString: function(time) {
-
-      // Show in seconds
-      if (time < 60) {
-        return Math.floor(time) + Translation.translate('date.sec_ago');
-      }
-
-      // Show in minutes
-      else if (time < 60 * 60) {
-        return Math.floor(time / 60) + Translation.translate('date.min_ago');
-      }
-
-      // Show in hours
-      else if (time < 60 * 60 * 24) {
-        return Math.floor(time / 60 / 60) + Translation.translate('date.hour_ago');
-      }
-
-      return Math.floor(time / 60 / 60 / 24) + Translation.translate('date.day_ago');
-    },
-
-    /**
-     * Get date as string in format dd.MM.yyyy HH:mm
-     * @param {Object} date object
-     * @returns {string} dateString
-     */
-    formatDate: function(date) {
-      var yyyy = date.getFullYear().toString(),
-        mm = (date.getMonth() + 1).toString(), // getMonth() is zero-based
-        dd  = date.getDate().toString(),
-        hh = date.getHours() < 10 ? '0' + date.getHours() : date.getHours(),
-        min = date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes();
-
-      return dd + '.' + mm + '.' + yyyy + ' klo ' + hh + ':' + min;
-    }
+  var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
+    return typeof obj;
+  } : function (obj) {
+    return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
   };
-});
 
-(function(root, factory) {
+  exports.default = {
 
-  // AMD
-  // istanbul ignore next
-  if (typeof define === 'function' && define.amd) {
-    define('ppr.library.utils.loader', [
-      'ppr.config',
-      'lodash'
-    ], factory);
-  }
-
-  // Node, CommonJS
-  else if (typeof exports === 'object') {
-    module.exports = factory(
-      require('../../ppr.config'),
-      require('lodash')
-    );
-  }
-
-  // Browser globals
-  // istanbul ignore next
-  else {
-    root.ppr.library.utils.loader = factory(root.ppr.config, root.vendor._);
-  }
-})(this, function(Config, _) {
-
-  'use strict';
-
-  return {
-
-    bulkModules: null,
     isInitialized: false,
     configList: {
       supportAMD: true,
@@ -466,53 +385,24 @@
     },
 
     /**
-     * Add bulk modules to cache
-     * @param {Object} modules
-     */
-    addBulkModules: function(modules) {
-
-      this.bulkModules = _.merge(this.getBulkModules(), modules);
-    },
-
-    /**
      * Check whether code supports AMD
      * @returns {Boolean}
      */
-    hasAMDSupport: function() {
+    hasAMDSupport: function hasAMDSupport() {
       return this.configList.supportAMD === true && typeof define === 'function' && define.amd;
     },
 
-    /**
-     * Check whether code supports CommonJS
-     * @returns {Boolean}
-     */
-    hasCommonSupport: function() {
-      return this.configList.supportCommon === true && typeof exports === 'object';
-    },
-
-    /**
-     * Get list of modules loaded with bulk style
-     */
-    getBulkModules: function() {
-
-      // Load bulk modules
-      if (this.bulkModules === null) {
-        this.bulkModules = this.loadBulkModules();
-      }
-
-      return this.bulkModules;
-    },
 
     /**
      * Initialize
      */
-    initialize: function() {
-
-      this.configList = _.extend(this.configList, Config.get('universal_loader', {}));
+    initialize: function initialize() {
+      this.configList = _lodash2.default.extend(this.configList, _ppr2.default.get('universal_loader', {}));
 
       // Mark as initialized
       this.isInitialized = true;
     },
+
 
     /**
      * Load dependency universally
@@ -521,127 +411,91 @@
      * @param {function}        callback callback function
      * @returns {*}
      */
-    load: function(namespaces, config, callback) {
-
-      // Initialize once
+    load: function load(namespaces, config, callback) {
       if (!this.isInitialized) {
         this.initialize();
       }
 
-      var _this = this;
+      var targetNamespaces = namespaces;
 
       if (typeof callback !== 'function') {
         throw new Error('Callback has to present');
       }
 
       // Turn single into array
-      if (typeof namespaces !== 'object') {
-        namespaces = [namespaces];
+      if ((typeof targetNamespaces === 'undefined' ? 'undefined' : _typeof(targetNamespaces)) !== 'object') {
+        targetNamespaces = [targetNamespaces];
       }
 
       var dependencies = [];
 
       // Use AMD
       if (this.hasAMDSupport()) {
-
-        // Loading custom
         if (config.custom === true) {
-          namespaces = _.map(namespaces, function(namespace) {
+          targetNamespaces = _lodash2.default.map(targetNamespaces, function (namespace) {
+            var targetNamespace = namespace;
 
             // Last dot is after last slash
-            if (namespace.lastIndexOf('.') > namespace.lastIndexOf('/')) {
-              namespace = namespace.split('.');
+            if (targetNamespace.lastIndexOf('.') > targetNamespace.lastIndexOf('/')) {
+              targetNamespace = targetNamespace.split('.');
 
-              var className = namespace.pop();
+              var className = targetNamespace.pop();
 
-              namespace = namespace.join('.') + '/' + className;
+              targetNamespace = targetNamespace.join('.') + '/' + className;
             }
 
-            return namespace;
+            return targetNamespace;
           });
         }
 
-        return require(namespaces, callback);
-      }
-
-      // Use CommonJS
-      else if (this.hasCommonSupport()) {
-
-        _.each(namespaces, function(namespace) {
-
-          namespace = namespace.split('.');
-
-          // Remove first
-          namespace.shift();
-          namespace = _.map(namespace, _.camelCase);
-
-          dependencies.push(_.result(_this.getBulkModules(), namespace.join('.').toLowerCase().trim()));
-        });
-
-        return callback.apply(null, dependencies);
+        // eslint-disable-next-line import/no-dynamic-require, global-require
+        return require(targetNamespaces, callback);
       }
 
       // Use globals
-      _.each(namespaces, function(namespace) {
-        dependencies.push(_.get(window, namespace));
+      _lodash2.default.each(targetNamespaces, function (namespace) {
+        dependencies.push(_lodash2.default.get(window, _lodash2.default.camelCase(namespace)));
       });
 
-      return callback.apply(null, dependencies);
-    },
-
-    /**
-     * Load all files when using CommonJS
-     */
-    loadBulkModules: function() {
-
-      var result = {};
-
-      // No support for CommonJS or already loaded
-      if (!this.hasCommonSupport()) {
-        return result;
-      }
-
-      var bulk = require('bulk-require');
-
-      result = bulk(__dirname + '/../../', ['**/*.js']);
-
-      return result;
+      return callback.apply(undefined, dependencies);
     }
   };
+  module.exports = exports['default'];
 });
-
-(function(root, factory) {
-
-  // AMD
-  // istanbul ignore next
-  if (typeof define === 'function' && define.amd) {
-    define('ppr.library.utils.object', [], factory);
+(function (global, factory) {
+  if (typeof define === "function" && define.amd) {
+    define('ppr.library.utils.object', ['module', 'exports'], factory);
+  } else if (typeof exports !== "undefined") {
+    factory(module, exports);
+  } else {
+    var mod = {
+      exports: {}
+    };
+    factory(mod, mod.exports);
+    global.pprLibraryUtilsObject = mod.exports;
   }
-
-  // Node, CommonJS
-  else if (typeof exports === 'object') {
-    module.exports = factory();
-  }
-
-  // Browser globals
-  // istanbul ignore next
-  else {
-    root.ppr.library.utils.object = factory();
-  }
-})(this, function() {
-
+})(this, function (module, exports) {
   'use strict';
 
-  return {
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+
+  var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
+    return typeof obj;
+  } : function (obj) {
+    return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+  };
+
+  exports.default = {
 
     /**
      * Convert data to JSON string
      * @param {Object|Object[]} data
      * @return {string}
      */
-    stringify: function(data) {
-
-      var result;
+    stringify: function stringify(data) {
+      var result = void 0;
 
       // Already resolved
       if (typeof data === 'string') {
@@ -657,17 +511,17 @@
       return result;
     },
 
+
     /**
      * Parse JSON string to object
      * @param {string} targetString
      * @return {Object|Object[]}
      */
-    parseJSON: function(targetString) {
-
-      var result;
+    parseJSON: function parseJSON(targetString) {
+      var result = void 0;
 
       // Already resolved
-      if (typeof targetString === 'object') {
+      if ((typeof targetString === 'undefined' ? 'undefined' : _typeof(targetString)) === 'object') {
         return targetString;
       }
 
@@ -678,59 +532,38 @@
       }
 
       return result;
-    },
-
-    /**
-     * Legacy browser compatible replacement for Object.assign
-     * From: https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Object/assign
-     */
-    assign: function(target) {
-      // We must check against these specific cases.
-      if (target === undefined || target === null) {
-        throw new TypeError('Cannot convert undefined or null to object');
-      }
-
-      var output = Object(target);
-      for (var index = 1; index < arguments.length; index++) {
-        var source = arguments[index];
-        if (source !== undefined && source !== null) {
-          for (var nextKey in source) {
-            if (source.hasOwnProperty(nextKey)) {
-              output[nextKey] = source[nextKey];
-            }
-          }
-        }
-      }
-
-      return output;
     }
   };
+  module.exports = exports['default'];
 });
-
-(function(root, factory) {
-
-  // AMD
-  // istanbul ignore next
-  if (typeof define === 'function' && define.amd) {
-    define('ppr.library.utils.request', ['lodash'], factory);
+(function (global, factory) {
+  if (typeof define === "function" && define.amd) {
+    define('ppr.library.utils.request', ['module', 'exports', 'lodash'], factory);
+  } else if (typeof exports !== "undefined") {
+    factory(module, exports, require('lodash'));
+  } else {
+    var mod = {
+      exports: {}
+    };
+    factory(mod, mod.exports, global._);
+    global.pprLibraryUtilsRequest = mod.exports;
   }
-
-  // Node, CommonJS
-  else if (typeof exports === 'object') {
-    module.exports = factory(require('lodash'));
-  }
-
-  // Browser globals
-  // istanbul ignore next
-  else {
-    root.ppr.library.utils.request = factory(root.vendor._);
-  }
-})(this, function() {
-
+})(this, function (module, exports, _lodash) {
   'use strict';
 
-  return {
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
 
+  var _lodash2 = _interopRequireDefault(_lodash);
+
+  function _interopRequireDefault(obj) {
+    return obj && obj.__esModule ? obj : {
+      default: obj
+    };
+  }
+
+  exports.default = {
     query: {},
 
     /**
@@ -740,30 +573,32 @@
      * @param {string} sourceUrl    target source url
      * @return {string}
      */
-    getQueryParam: function(name, defaultValue, sourceUrl) {
+    getQueryParam: function getQueryParam(name) {
+      var defaultValue = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+      var sourceUrl = arguments[2];
+
       var parameters = this.getQueryParams(sourceUrl);
 
-      return parameters.hasOwnProperty(name) ? parameters[name] : (
-        typeof defaultValue !== 'undefined' ? defaultValue : null
-      );
+      if (Object.prototype.hasOwnProperty.call(parameters, name)) {
+        return parameters[name];
+      }
+
+      return defaultValue;
     },
+
 
     /**
      * Get list of all query parameters
      * @return {Object}
      */
-    getQueryParams: function(sourceUrl) {
-      if (typeof sourceUrl === 'undefined') {
-        sourceUrl = window.location.href;
-      }
+    getQueryParams: function getQueryParams() {
+      var sourceUrl = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : window.location.href;
 
-      var result = {},
-        searchIndex = sourceUrl.indexOf('?'),
-        queryString,
-        queryVariables;
+      var result = {};
+      var searchIndex = sourceUrl.indexOf('?');
 
       // Already resolved
-      if (this.query.hasOwnProperty(sourceUrl)) {
+      if (Object.prototype.hasOwnProperty.call(this.query, sourceUrl)) {
         return this.query[sourceUrl];
       }
 
@@ -772,10 +607,10 @@
         return result;
       }
 
-      queryString = sourceUrl.substring(searchIndex + 1);
-      queryVariables = queryString.split('&');
+      var queryString = sourceUrl.substring(searchIndex + 1);
+      var queryVariables = queryString.split('&');
 
-      _.each(queryVariables, function(parameterString) {
+      _lodash2.default.each(queryVariables, function (parameterString) {
         var parameter = parameterString.split('=');
 
         result[parameter[0]] = parameter[1];
@@ -786,84 +621,95 @@
       return result;
     }
   };
+  module.exports = exports['default'];
 });
-
-(function(root, factory) {
-
-  // AMD
-  // istanbul ignore next
-  if (typeof define === 'function' && define.amd) {
-    define('ppr.library.utils.storage', ['ppr.config', 'jquery'], factory);
+(function (global, factory) {
+  if (typeof define === "function" && define.amd) {
+    define('ppr.library.utils.storage', ['module', 'exports', 'ppr.config'], factory);
+  } else if (typeof exports !== "undefined") {
+    factory(module, exports, require('ppr.config'));
+  } else {
+    var mod = {
+      exports: {}
+    };
+    factory(mod, mod.exports, global.pprConfig);
+    global.pprLibraryUtilsStorage = mod.exports;
   }
-
-  // Node, CommonJS
-  else if (typeof exports === 'object') {
-    module.exports = factory(
-      require('../../ppr.config'),
-      require('jquery')
-    );
-  }
-
-  // Browser globals
-  // istanbul ignore next
-  else {
-    root.ppr.library.utils.storage = factory(root.ppr.config, root.vendor._);
-  }
-})(this, function(Config, $) {
-
+})(this, function (module, exports, _ppr) {
   'use strict';
 
-  return {
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
 
-    configList: $.extend({
-      enabled: true
-    }, Config.get('storage', {})),
+  var _ppr2 = _interopRequireDefault(_ppr);
+
+  function _interopRequireDefault(obj) {
+    return obj && obj.__esModule ? obj : {
+      default: obj
+    };
+  }
+
+  var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
+    return typeof obj;
+  } : function (obj) {
+    return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+  };
+
+  exports.default = {
+
+    configList: Object.assign({ enabled: true }, _ppr2.default.get('storage', {})),
 
     /**
      * Check whether storage is enabled
      * @returns {Boolean}
      */
-    isEnabled: function() {
+    isEnabled: function isEnabled() {
       return this.configList.enabled === true && this.isSupported();
     },
+
 
     /**
      * Check whether storage is supported
      * @returns {Boolean}
      */
-    isSupported: function() {
+    isSupported: function isSupported() {
       return typeof window.localStorage !== 'undefined';
     },
+
 
     /**
      * Set item into storage
      * @param {string} key
      * @param {*}      value
      */
-    set: function(key, value) {
-
+    set: function set(key, value) {
       if (!this.isEnabled()) {
         return null;
       }
 
-      // Convert object into string
-      if (typeof value === 'object') {
+      var targetValue = value;
 
+      // Convert object into string
+      if ((typeof targetValue === 'undefined' ? 'undefined' : _typeof(targetValue)) === 'object') {
         try {
-          value = JSON.stringify(value);
-        } catch (e) {}
+          targetValue = JSON.stringify(targetValue);
+        } catch (e) {
+          targetValue = '';
+        }
       }
 
-      window.localStorage.setItem(key, value);
+      window.localStorage.setItem(key, targetValue);
+      return true;
     },
+
 
     /**
      * Get item from storage
      * @param {string} key
      * @returns {*}
      */
-    get: function(key) {
-
+    get: function get(key) {
       if (!this.isEnabled()) {
         return null;
       }
@@ -872,70 +718,80 @@
 
       try {
         value = JSON.parse(value);
-      } catch (e) {}
+      } catch (e) {
+        // Nothing
+      }
 
       return value;
     }
   };
+  module.exports = exports['default'];
 });
-
-(function(root, factory) {
-
-  // AMD
-  // istanbul ignore next
-  if (typeof define === 'function' && define.amd) {
-    define('ppr.library.utils.string', ['lodash', 'jquery'], factory);
+(function (global, factory) {
+  if (typeof define === "function" && define.amd) {
+    define('ppr.library.utils.string', ['module', 'exports', 'lodash', 'jquery'], factory);
+  } else if (typeof exports !== "undefined") {
+    factory(module, exports, require('lodash'), require('jquery'));
+  } else {
+    var mod = {
+      exports: {}
+    };
+    factory(mod, mod.exports, global._, global.$);
+    global.pprLibraryUtilsString = mod.exports;
   }
-
-  // Node, CommonJS
-  else if (typeof exports === 'object') {
-    module.exports = factory(
-      require('lodash'),
-      require('jquery')
-    );
-  }
-
-  // Browser globals
-  // istanbul ignore next
-  else {
-    root.ppr.library.utils.string = factory(root.vendor._, root.vendor.$);
-  }
-})(this, function(_, $) {
-
+})(this, function (module, exports, _lodash, _jquery) {
   'use strict';
 
-  return {
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+
+  var _lodash2 = _interopRequireDefault(_lodash);
+
+  var _jquery2 = _interopRequireDefault(_jquery);
+
+  function _interopRequireDefault(obj) {
+    return obj && obj.__esModule ? obj : {
+      default: obj
+    };
+  }
+
+  exports.default = {
 
     /**
      * Generate hash from string
      * @param {string} targetString target string
      * @returns {number}
      */
-    generateHash: function(targetString) {
-      var hash = 0, i, chr, len;
+    generateHash: function generateHash(targetString) {
+      var hash = 0;
+      var i = void 0;
+      var chr = void 0;
+      var len = void 0;
 
       if (targetString.length === 0) {
         return hash;
       }
 
-      for (i = 0, len = targetString.length; i < len; i++) {
-        chr   = targetString.charCodeAt(i);
-        hash  = ((hash << 5) - hash) + chr;
-        hash |= 0;
+      for (i = 0, len = targetString.length; i < len; i += 1) {
+        chr = targetString.charCodeAt(i);
+        hash = (hash << 32) - hash + chr; // eslint-disable-line no-bitwise
+        hash |= 0; // eslint-disable-line no-bitwise
       }
 
       return hash;
     },
+
 
     /**
      * Remove all html from string
      * @param {string} targetString
      * @returns {string}
      */
-    getAsPlainText: function(targetString) {
-
-      return $('<p>').html(targetString).text();
+    getAsPlainText: function getAsPlainText(targetString) {
+      return (0, _jquery2.default)('<p>').html(targetString).text();
     },
+
 
     /**
      * Linkify hash tags in text
@@ -943,40 +799,32 @@
      * @param {string} media target social media (supported values: facebook, instagram, twitter)
      * @returns {string}
      */
-    linkifyHashTags: function(text, media) {
-      var targetUrl, mediaUrls;
-
-      mediaUrls = {
+    linkifyHashTags: function linkifyHashTags(text, media) {
+      var mediaUrls = {
         twitter: 'https://twitter.com/hashtag/',
         facebook: 'https://www.facebook.com/hashtag/',
         instagram: 'https://www.instagram.com/explore/tags/'
       };
 
-      media = media.toLowerCase();
+      var targetMedia = media.toLowerCase();
 
       // Media is unsupported
-      if (typeof mediaUrls[media] === 'undefined') {
+      if (typeof mediaUrls[targetMedia] === 'undefined') {
         return text;
       }
 
-      targetUrl = mediaUrls[media];
+      var targetUrl = mediaUrls[targetMedia];
 
-      text = text.replace(/[#]+[A-Za-z0-9-_äöåÄÖÅ]+/g, function(t) {
-        var tag, link;
-
-        tag = t.replace('#', '');
-
-        link = $('<a>').
-          attr('class', 'hashtag').
-          attr('href', targetUrl + tag).
-          attr('target', '_blank').
-          text(t);
+      var targetText = text.replace(/[#]+[A-Za-z0-9-_äöåÄÖÅ]+/g, function (t) {
+        var tag = t.replace('#', '');
+        var link = (0, _jquery2.default)('<a>').attr('class', 'hashtag').attr('href', targetUrl + tag).attr('target', '_blank').text(t);
 
         return link[0].outerHTML;
       });
 
-      return text;
+      return targetText;
     },
+
 
     /**
      * Replace variables with parameters in string
@@ -984,74 +832,76 @@
      * @param {Object} params       parameters to replace variables
      * @returns {string}
      */
-    replaceVariablesWithParameters: function(targetString, params) {
+    replaceVariablesWithParameters: function replaceVariablesWithParameters(targetString, params) {
+      var stringValue = targetString;
 
-      _.each(params, function(value, key) {
-        targetString = targetString.replace(':' + key, value);
+      _lodash2.default.each(params, function (value, key) {
+        stringValue = stringValue.replace(':' + key, value);
       });
 
-      return targetString;
+      return stringValue;
     }
   };
+  module.exports = exports['default'];
 });
-
-(function(root, factory) {
-
-  // AMD
-  // istanbul ignore next
-  if (typeof define === 'function' && define.amd) {
-    define('ppr.library.utils.window', [
-      'ppr.config',
-      'jquery',
-      'lodash'
-    ], factory);
+(function (global, factory) {
+  if (typeof define === "function" && define.amd) {
+    define('ppr.library.utils.window', ['module', 'exports', 'jquery', 'lodash', 'ppr.config'], factory);
+  } else if (typeof exports !== "undefined") {
+    factory(module, exports, require('jquery'), require('lodash'), require('ppr.config'));
+  } else {
+    var mod = {
+      exports: {}
+    };
+    factory(mod, mod.exports, global.$, global._, global.pprConfig);
+    global.pprLibraryUtilsWindow = mod.exports;
   }
-
-  // Node, CommonJS
-  else if (typeof exports === 'object') {
-    module.exports = factory(
-      require('../../ppr.config'),
-      require('jquery'),
-      require('lodash')
-    );
-  }
-
-  // Browser globals
-  // istanbul ignore next
-  else {
-    root.ppr.library.utils.window = factory(root.ppr.config, root.vendor.$, root.vendor._);
-  }
-})(this, function(Config, $, _) {
-
+})(this, function (module, exports, _jquery, _lodash, _ppr) {
   'use strict';
 
-  return {
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
 
-    configList: $.extend(true, {
+  var _jquery2 = _interopRequireDefault(_jquery);
+
+  var _lodash2 = _interopRequireDefault(_lodash);
+
+  var _ppr2 = _interopRequireDefault(_ppr);
+
+  function _interopRequireDefault(obj) {
+    return obj && obj.__esModule ? obj : {
+      default: obj
+    };
+  }
+
+  exports.default = {
+
+    configList: _jquery2.default.extend(true, {
       breakpoints: {},
       mobile_breakpoints: []
-    }, Config.get('window', {})),
+    }, _ppr2.default.get('window', {})),
 
     /**
      * Check whether given breakpoint exists
      * @param {string} breakpoint target breakpoint
      * @returns {Boolean}
      */
-    isBreakpoint: function(breakpoint) {
+    isBreakpoint: function isBreakpoint(breakpoint) {
       return typeof this.configList.breakpoints[breakpoint] !== 'undefined';
     },
+
 
     /**
      * Check whether current window matches to mobile breakpoint
      * @returns {Boolean}
      */
-    isMobile: function() {
+    isMobile: function isMobile() {
+      var _this = this;
 
-      var _this = this,
-        isMobile = false;
+      var isMobile = false;
 
-      _.each(this.configList.mobile_breakpoints, function(breakpoint) {
-
+      _lodash2.default.each(this.configList.mobile_breakpoints, function (breakpoint) {
         if (!isMobile) {
           isMobile = _this.matchBreakpoint(breakpoint);
         }
@@ -1060,13 +910,13 @@
       return isMobile;
     },
 
+
     /**
      * Check whether current window match to breakpoint
      * @param {string} breakpoint name of breakpoint
      * @returns {Boolean}
      */
-    matchBreakpoint: function(breakpoint) {
-
+    matchBreakpoint: function matchBreakpoint(breakpoint) {
       // Breakpoint doesn't exist
       if (!this.isBreakpoint(breakpoint)) {
         return false;
@@ -1077,30 +927,27 @@
         return false;
       }
 
-      var breakpointDetails = this.configList.breakpoints[breakpoint],
-        targetWidth = _.replace(breakpointDetails, /[<>]/, '').trim();
+      var breakpointDetails = this.configList.breakpoints[breakpoint];
+      var targetWidth = _lodash2.default.replace(breakpointDetails, /[<>]/, '').trim();
 
-      // Smaller than
-      if (_.startsWith(breakpointDetails, '<')) {
+      if (_lodash2.default.startsWith(breakpointDetails, '<')) {
+        // Smaller than
         return window.matchMedia('(max-width: ' + targetWidth + 'px)').matches;
-      }
-
-      // Bigger than
-      else if (_.startsWith(breakpointDetails, '>')) {
+      } else if (_lodash2.default.startsWith(breakpointDetails, '>')) {
+        // Bigger than
         return window.matchMedia('(min-width: ' + targetWidth + 'px)').matches;
-
       }
 
       return false;
     },
+
 
     /**
      * Get prefixed transformations
      * @param  {string} transform
      * @return {Object}
      */
-    transformations: function(transform) {
-
+    transformations: function transformations(transform) {
       return {
         '-webkit-transform': transform,
         '-moz-transform': transform,
@@ -1110,974 +957,1315 @@
       };
     },
 
+
     /**
      * Transition callback
-     * @returns {*}
      */
-    whichTransitionEvent: function() {
+    whichTransitionEvent: function whichTransitionEvent() {
+      var el = document.createElement('fakeelement');
+      var transitions = {
+        transition: 'transitionend',
+        OTransition: 'oTransitionEnd',
+        MozTransition: 'transitionend',
+        WebkitTransition: 'webkitTransitionEnd'
+      };
 
-      var t,
-        el = document.createElement('fakeelement'),
-        transitions = {
-          transition: 'transitionend',
-          OTransition: 'oTransitionEnd',
-          MozTransition: 'transitionend',
-          WebkitTransition: 'webkitTransitionEnd'
-        };
-
-      for (t in transitions) {
-        if (el.style[t] !== undefined) {
-          return transitions[t];
+      // eslint-disable-next-line
+      for (var a in transitions) {
+        if (el.style[a] !== undefined) {
+          return transitions[a];
         }
       }
+
+      return null;
     }
   };
+  module.exports = exports['default'];
 });
-
-(function(root, factory) {
-
-  // AMD
-  // istanbul ignore next
-  if (typeof define === 'function' && define.amd) {
-    define('ppr.translation', [
-      'ppr.config',
-      'ppr.library.utils.string',
-      'lodash'
-    ], factory);
+(function (global, factory) {
+  if (typeof define === "function" && define.amd) {
+    define('ppr.translation', ['module', 'exports', 'lodash', 'ppr.config', 'ppr.library.utils.string'], factory);
+  } else if (typeof exports !== "undefined") {
+    factory(module, exports, require('lodash'), require('ppr.config'), require('ppr.library.utils.string'));
+  } else {
+    var mod = {
+      exports: {}
+    };
+    factory(mod, mod.exports, global._, global.pprConfig, global.pprLibraryUtilsString);
+    global.pprTranslation = mod.exports;
   }
-
-  // Node, CommonJS
-  else if (typeof exports === 'object') {
-    module.exports = factory(
-      require('./ppr.config'),
-      require('./library/utils/string'),
-      require('lodash')
-    );
-  }
-
-  // Browser globals
-  // istanbul ignore next
-  else {
-    root.ppr.translation = factory(root.ppr.config, root.ppr.library.utils.string, root.vendor._);
-  }
-})(this, function(Config, StringUtils, _) {
-
+})(this, function (module, exports, _lodash, _ppr, _pprLibraryUtils) {
   'use strict';
 
-  var Translation;
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
 
-  Translation = {
+  var _lodash2 = _interopRequireDefault(_lodash);
+
+  var _ppr2 = _interopRequireDefault(_ppr);
+
+  var _pprLibraryUtils2 = _interopRequireDefault(_pprLibraryUtils);
+
+  function _interopRequireDefault(obj) {
+    return obj && obj.__esModule ? obj : {
+      default: obj
+    };
+  }
+
+  var Translation = {
 
     isInitialized: false,
 
     language: undefined,
     translationList: undefined,
 
-    /**
-     * Initialize translation wrapper
-     */
-    initialize: function() {
-
-      this.language = Config.get('language', 'en');
-      this.translationList = Config.get('translations', {});
+    initialize: function initialize() {
+      this.language = _ppr2.default.get('language', 'en');
+      this.translationList = _ppr2.default.get('translations', {});
     },
-
-    /**
-     * Get list of available translations
-     */
-    getAll: function() {
-
-      // Needs to be initialized
+    getAll: function getAll() {
       if (!this.isInitialized) {
         this.initialize();
       }
 
       return this.translationList;
     },
-
-    /**
-     * Helper method to get default language if attribute is not given
-     * @param {string} [language] target language
-     * @returns {string}
-     */
-    getLanguage: function(language) {
+    getLanguage: function getLanguage(language) {
       return typeof language !== 'undefined' ? language : this.language;
     },
-
-    /**
-     * Helper method to get language prefixed key
-     * @param {string} language target language
-     * @param {string} key      target translation key
-     * @returns {string}
-     */
-    getPrefixedKey: function(language, key) {
+    getPrefixedKey: function getPrefixedKey(language, key) {
       return language + '.' + key;
     },
-
-    /**
-     * Translate given key into string
-     * @param {string} key         target translation key
-     * @param {Object} [variables] list of key-value pairs
-     * @param {string} [language]  target language
-     */
-    translate: function(key, variables, language) {
-
-      // Needs to be initialized
+    translate: function translate(key, variables, language) {
       if (!this.isInitialized) {
         this.initialize();
       }
 
-      var translation = _.result(
-        this.translationList, this.getPrefixedKey(
-          this.getLanguage(language), key), key);
+      var prefixedKey = this.getPrefixedKey(this.getLanguage(language), key);
+      var translation = _lodash2.default.result(this.translationList, prefixedKey, key);
 
       // Has variables
       if (typeof variables !== 'undefined') {
-        translation = StringUtils.replaceVariablesWithParameters(translation, variables);
+        translation = _pprLibraryUtils2.default.replaceVariablesWithParameters(translation, variables);
       }
 
       return translation;
     }
   };
 
-  /**
-   * Public API
-   */
-  return {
+  exports.default = {
 
     /**
      * @inheritdoc
      */
-    getAll: function() {
+    getAll: function getAll() {
       return Translation.getAll();
     },
 
+
     /**
      * @inheritdoc
      */
-    translate: function(key, variables, language) {
+    translate: function translate(key, variables, language) {
       return Translation.translate(key, variables, language);
     }
   };
+  module.exports = exports['default'];
 });
-
-(function(root, factory) {
-
-  // AMD
-  // istanbul ignore next
-  if (typeof define === 'function' && define.amd) {
-    define('ppr.component.base_prototype', [
-      'ppr.library.utils.object',
-      'jquery'
-    ], factory);
+(function (global, factory) {
+  if (typeof define === "function" && define.amd) {
+    define('ppr.library.utils.date', ['module', 'exports', 'ppr.translation'], factory);
+  } else if (typeof exports !== "undefined") {
+    factory(module, exports, require('ppr.translation'));
+  } else {
+    var mod = {
+      exports: {}
+    };
+    factory(mod, mod.exports, global.pprTranslation);
+    global.pprLibraryUtilsDate = mod.exports;
   }
-
-  // Node, CommonJS
-  else if (typeof exports === 'object') {
-    module.exports = factory(
-      require('../library/utils/object'),
-      require('jquery')
-    );
-  }
-
-  // Browser global
-  // istanbul ignore next
-  else {
-    root.ppr.component.base_prototype = factory(root.ppr.library.utils.object, root.vendor.$);
-  }
-})(this, function(ObjectUtils, $) {
-
+})(this, function (module, exports, _ppr) {
   'use strict';
 
-  return {
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
 
-    children: undefined,
-    eventBus: null,
-    data: {},
-    href: null,
-    id: null,
-    name: null,
-    node: null,
-    page: null,
-    parent: undefined,
-    messages: {},
+  var _ppr2 = _interopRequireDefault(_ppr);
 
-    isBuilt: false,
+  function _interopRequireDefault(obj) {
+    return obj && obj.__esModule ? obj : {
+      default: obj
+    };
+  }
 
-    // Cache
-    cacheData: {},
-    cacheSubscribers: [],
+  var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
+    return typeof obj;
+  } : function (obj) {
+    return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+  };
 
+  exports.default = {
     /**
-     * Create and return a new component based on this one
+     * Get string as date object
+     * @param {string|number} dateString
+     * @returns {Object} date object
      */
-    createComponent: function(obj) {
-      return ObjectUtils.assign({}, this, obj);
+    getAsDate: function getAsDate(dateString) {
+      // Already resolved
+      if ((typeof dateString === 'undefined' ? 'undefined' : _typeof(dateString)) === 'object') {
+        return dateString;
+      }
+
+      // Already a number
+      if (typeof dateString === 'number') {
+        return new Date(dateString);
+      }
+
+      var match = dateString.match(/^([0-9]{4})-([0-9]{2})-([0-9]{2}) ([0-9]{2}):([0-9]{2}):([0-9]{2})$/, 'g');
+
+      // Format: 2016-03-31 13:00:00
+      if (match !== null) {
+        return new Date(match[1], match[2] - 1, match[3], match[4], match[5], match[6]);
+      }
+
+      match = dateString.match(/^([0-9]{2}).([0-9]{1,2}).([0-9]{4}) ([0-9]{1,2}):([0-9]{2}):([0-9]{2})$/, 'g');
+
+      // Format: 31.03.2016 13:00:00
+      // Format: 31.3.2016 5:00:00
+      if (match !== null) {
+        return new Date(match[3], match[2] - 1, match[1], match[4], match[5], match[6]);
+      }
+
+      return new Date(dateString);
     },
 
+
     /**
-     * Function to be called when build is finished
+     * Calculate difference between 2 dates
+     * @param {Object|string} toDate
+     * @param {Object|string} [fromDate]
+     * @returns {number}
      */
-    afterBuild: function() {
-      this.eventBus.publish('component_build_finished', this.id);
-      this.isBuilt = true;
+    getDifference: function getDifference(toDate) {
+      var fromDate = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : new Date();
+
+      var targetToDate = this.getAsDate(toDate);
+      var targetFromDate = this.getAsDate(fromDate);
+
+      // Return in seconds
+      return (targetFromDate.getTime() - targetToDate.getTime()) / 1000;
     },
 
-    /**
-     * Build component
-     * @returns {Boolean|undefined}
-     */
-    build: function() {},
 
     /**
-     * Get child components
-     * @note: use carefully, its very slow
-     * @return {Object[]} list of child components
+     * Get time as difference string
+     * @param {number} time in milliseconds
+     * @returns {string}
      */
-    getChildren: function() {
-      var _this = this;
+    getAsDifferenceString: function getAsDifferenceString(time) {
+      if (time < 60) {
+        // Show in seconds
+        return Math.floor(time) + _ppr2.default.translate('date.sec_ago');
+      } else if (time < 60 * 60) {
+        // Show in minutes
+        return Math.floor(time / 60) + _ppr2.default.translate('date.min_ago');
+      } else if (time < 60 * 60 * 24) {
+        // Show in hours
+        return Math.floor(time / 60 / 60) + _ppr2.default.translate('date.hour_ago');
+      }
 
-      if (typeof this.children === 'undefined') {
-        var componentIds = [];
+      return Math.floor(time / 60 / 60 / 24) + _ppr2.default.translate('date.day_ago');
+    },
 
-        _.each(this.node.find('[data-component]'), function(elem) {
 
-          var componentId = $(elem).attr('data-component-id'),
-            component = _this.page.getComponent(componentId);
+    /**
+     * Get date as string in format dd.MM.yyyy HH:mm
+     * @param {Object} date object
+     * @returns {string} dateString
+     */
+    formatDate: function formatDate(date) {
+      var yyyy = date.getFullYear().toString();
+      var mm = (date.getMonth() + 1).toString(); // getMonth() is zero-based
+      var dd = date.getDate().toString();
+      var hh = date.getHours() < 10 ? '0' + date.getHours() : date.getHours();
+      var min = date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes();
 
-          if (component.getParent().id === _this.id) {
-            componentIds.push(componentId);
+      return dd + '.' + mm + '.' + yyyy + ' klo ' + hh + ':' + min;
+    }
+  };
+  module.exports = exports['default'];
+});
+(function (global, factory) {
+  if (typeof define === "function" && define.amd) {
+    define('ppr.library.utils', ['module', 'exports', 'ppr.library.utils.date', 'ppr.library.utils.loader', 'ppr.library.utils.object', 'ppr.library.utils.request', 'ppr.library.utils.storage', 'ppr.library.utils.string', 'ppr.library.utils.window'], factory);
+  } else if (typeof exports !== "undefined") {
+    factory(module, exports, require('ppr.library.utils.date'), require('ppr.library.utils.loader'), require('ppr.library.utils.object'), require('ppr.library.utils.request'), require('ppr.library.utils.storage'), require('ppr.library.utils.string'), require('ppr.library.utils.window'));
+  } else {
+    var mod = {
+      exports: {}
+    };
+    factory(mod, mod.exports, global.pprLibraryUtilsDate, global.pprLibraryUtilsLoader, global.pprLibraryUtilsObject, global.pprLibraryUtilsRequest, global.pprLibraryUtilsStorage, global.pprLibraryUtilsString, global.pprLibraryUtilsWindow);
+    global.pprLibraryUtils = mod.exports;
+  }
+})(this, function (module, exports, _pprLibraryUtils, _pprLibraryUtils3, _pprLibraryUtils5, _pprLibraryUtils7, _pprLibraryUtils9, _pprLibraryUtils11, _pprLibraryUtils13) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+
+  var _pprLibraryUtils2 = _interopRequireDefault(_pprLibraryUtils);
+
+  var _pprLibraryUtils4 = _interopRequireDefault(_pprLibraryUtils3);
+
+  var _pprLibraryUtils6 = _interopRequireDefault(_pprLibraryUtils5);
+
+  var _pprLibraryUtils8 = _interopRequireDefault(_pprLibraryUtils7);
+
+  var _pprLibraryUtils10 = _interopRequireDefault(_pprLibraryUtils9);
+
+  var _pprLibraryUtils12 = _interopRequireDefault(_pprLibraryUtils11);
+
+  var _pprLibraryUtils14 = _interopRequireDefault(_pprLibraryUtils13);
+
+  function _interopRequireDefault(obj) {
+    return obj && obj.__esModule ? obj : {
+      default: obj
+    };
+  }
+
+  exports.default = {
+    DateUtils: _pprLibraryUtils2.default,
+    UniversalLoader: _pprLibraryUtils4.default,
+    ObjectUtils: _pprLibraryUtils6.default,
+    Request: _pprLibraryUtils8.default,
+    Storage: _pprLibraryUtils10.default,
+    StringUtils: _pprLibraryUtils12.default,
+    WindowUtils: _pprLibraryUtils14.default
+  };
+  module.exports = exports['default'];
+});
+(function (global, factory) {
+  if (typeof define === "function" && define.amd) {
+    define('ppr.library', ['module', 'exports', 'ppr.library.eventbusprototype', 'ppr.library.utils'], factory);
+  } else if (typeof exports !== "undefined") {
+    factory(module, exports, require('ppr.library.eventbusprototype'), require('ppr.library.utils'));
+  } else {
+    var mod = {
+      exports: {}
+    };
+    factory(mod, mod.exports, global.pprLibraryEventbusprototype, global.pprLibraryUtils);
+    global.pprLibrary = mod.exports;
+  }
+})(this, function (module, exports, _pprLibrary, _pprLibrary3) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+
+  var _pprLibrary2 = _interopRequireDefault(_pprLibrary);
+
+  var _pprLibrary4 = _interopRequireDefault(_pprLibrary3);
+
+  function _interopRequireDefault(obj) {
+    return obj && obj.__esModule ? obj : {
+      default: obj
+    };
+  }
+
+  exports.default = {
+    EventBusPrototype: _pprLibrary2.default,
+    Utils: _pprLibrary4.default
+  };
+  module.exports = exports['default'];
+});
+(function (global, factory) {
+  if (typeof define === "function" && define.amd) {
+    define('ppr.page.baseprototype', ['module', 'exports', 'jquery', 'lodash', 'ppr.config', 'ppr.library.utils.object', 'ppr.library.utils.loader', 'ppr.library.eventbusprototype'], factory);
+  } else if (typeof exports !== "undefined") {
+    factory(module, exports, require('jquery'), require('lodash'), require('ppr.config'), require('ppr.library.utils.object'), require('ppr.library.utils.loader'), require('ppr.library.eventbusprototype'));
+  } else {
+    var mod = {
+      exports: {}
+    };
+    factory(mod, mod.exports, global.$, global._, global.pprConfig, global.pprLibraryUtilsObject, global.pprLibraryUtilsLoader, global.pprLibraryEventbusprototype);
+    global.pprPageBaseprototype = mod.exports;
+  }
+})(this, function (module, exports, _jquery, _lodash, _ppr, _pprLibraryUtils, _pprLibraryUtils3, _pprLibrary) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+
+  var _jquery2 = _interopRequireDefault(_jquery);
+
+  var _lodash2 = _interopRequireDefault(_lodash);
+
+  var _ppr2 = _interopRequireDefault(_ppr);
+
+  var _pprLibraryUtils2 = _interopRequireDefault(_pprLibraryUtils);
+
+  var _pprLibraryUtils4 = _interopRequireDefault(_pprLibraryUtils3);
+
+  var _pprLibrary2 = _interopRequireDefault(_pprLibrary);
+
+  function _interopRequireDefault(obj) {
+    return obj && obj.__esModule ? obj : {
+      default: obj
+    };
+  }
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var _createClass = function () {
+    function defineProperties(target, props) {
+      for (var i = 0; i < props.length; i++) {
+        var descriptor = props[i];
+        descriptor.enumerable = descriptor.enumerable || false;
+        descriptor.configurable = true;
+        if ("value" in descriptor) descriptor.writable = true;
+        Object.defineProperty(target, descriptor.key, descriptor);
+      }
+    }
+
+    return function (Constructor, protoProps, staticProps) {
+      if (protoProps) defineProperties(Constructor.prototype, protoProps);
+      if (staticProps) defineProperties(Constructor, staticProps);
+      return Constructor;
+    };
+  }();
+
+  var BasePrototype = function () {
+    function BasePrototype(node) {
+      var params = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+      _classCallCheck(this, BasePrototype);
+
+      this.node = node;
+      this.name = params.name || null;
+      this.data = null;
+      this.eventBus = new _pprLibrary2.default();
+      this.components = {};
+      this.cacheComponentReady = [];
+
+      // Set page data
+      if (this.node.attr('data-page-data')) {
+        this.data = Object.assign({}, this.data, _pprLibraryUtils2.default.parseJSON(this.node.attr('data-page-data')));
+      }
+    }
+
+    /**
+     * Function to be triggered when build is done
+     */
+
+
+    _createClass(BasePrototype, [{
+      key: 'afterBuild',
+      value: function afterBuild() {
+        this.setDefaultSubscribers();
+
+        this.buildComponents(this.node);
+        this.buildUIExtensions();
+      }
+    }, {
+      key: 'build',
+      value: function build() {
+        // eslint-disable-line
+        return true;
+      }
+    }, {
+      key: 'buildComponent',
+      value: function buildComponent(node) {
+        var _this = this;
+
+        var namespace = void 0;
+        var name = node.attr('data-component').trim();
+
+        var instanceName = _lodash2.default.replace(_lodash2.default.snakeCase(name), '_', '-');
+        var params = {};
+        var loaderParams = {};
+
+        // Use custom name if present
+        if (name.length > 0) {
+          namespace = 'ppr.component.' + instanceName;
+          loaderParams.custom = true;
+        } else if (node.attr('data-component-href')) {
+          // Reloadable component
+          namespace = 'ppr.component.reloadableprototype';
+          name = 'reloadable_prototype';
+        } else {
+          // Normal component
+          namespace = 'ppr.component.baseprototype';
+          name = 'base_prototype';
+        }
+
+        // Use existing id
+        if (node.attr('data-component-id')) {
+          params.id = node.attr('data-component-id');
+        } else {
+          params.id = _lodash2.default.uniqueId('Component_');
+        }
+
+        // Check that component is not already built
+        if (typeof this.components[params.id] !== 'undefined') {
+          if (this.components[params.id].isBuilt) {
+            return false;
           }
+        }
+
+        params.name = name;
+        params.eventBus = this.eventBus;
+        params.page = this;
+
+        _pprLibraryUtils4.default.load(namespace, loaderParams, function (ComponentPrototype) {
+          if (typeof ComponentPrototype === 'undefined') {
+            return;
+          }
+
+          // Instantiate prototype
+          var instance = new ComponentPrototype(node, params);
+
+          // Remember instance
+          _this.components[params.id] = instance;
+
+          // Map required modules to namespaces
+          var requiredModuleNames = instance.getRequiredModules();
+          var requiredModules = _lodash2.default.map(requiredModuleNames, function (ns) {
+            return 'ppr.module.' + ns;
+          });
+
+          // Load modules
+          _pprLibraryUtils4.default.load(requiredModules, { custom: true }, function () {
+            for (var _len = arguments.length, modules = Array(_len), _key = 0; _key < _len; _key++) {
+              modules[_key] = arguments[_key];
+            }
+
+            var messages = {};
+
+            // Initialize modules
+            _lodash2.default.each(modules, function (module, index) {
+              module.initialize({}, _this.eventBus);
+              messages[requiredModuleNames[index]] = module.getMessages();
+            });
+
+            instance.setModuleMessages(messages);
+
+            // Wait until instance is buildable
+            instance.isBuildable().then(function (data) {
+              if (instance.build(data) === false) {
+                delete _this.components[params.id];
+                node.remove();
+                return;
+              }
+
+              instance.afterBuild();
+            });
+          });
         });
 
-        this.children = componentIds;
+        return true;
       }
+    }, {
+      key: 'buildComponents',
+      value: function buildComponents(node) {
+        var _this2 = this;
 
-      var result = [];
-
-      _.each(this.children, function(component) {
-        result.push(_this.page.getComponent(component));
-      });
-
-      return result;
-    },
-
-    /**
-     * Get parent component
-     * @return {Object} parent component instance or null
-     */
-    getParent: function() {
-
-      // Already resolved
-      if (typeof this.parent !== 'undefined') {
-        return this.page.getComponent(this.parent);
+        node.find('[data-component]').each(function (index, element) {
+          return _this2.eventBus.publish('build_component', (0, _jquery2.default)(element));
+        });
       }
+    }, {
+      key: 'buildUIExtensions',
+      value: function buildUIExtensions() {
+        // eslint-disable-line
+        _pprLibraryUtils4.default.load(_ppr2.default.get('ui.builders', []), { custom: true }, function () {
+          for (var _len2 = arguments.length, builders = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+            builders[_key2] = arguments[_key2];
+          }
 
-      var parentElem = this.node.parents('[data-component]:first'),
-        parent = null;
-
-      if (parentElem.length) {
-        parent = parentElem.attr('data-component-id');
+          _lodash2.default.each(builders, function (builder) {
+            builder.initialize();
+          });
+        });
       }
+    }, {
+      key: 'getComponent',
+      value: function getComponent(id) {
+        return typeof this.components[id] !== 'undefined' ? this.components[id] : null;
+      }
+    }, {
+      key: 'onComponentBuildFinished',
+      value: function onComponentBuildFinished(componentId) {
+        this.cacheComponentReady.push(componentId);
 
-      this.parent = parent;
+        // All components ready
+        if (this.cacheComponentReady.length === _lodash2.default.keys(this.components).length) {
+          this.eventBus.publish('page_build_finished');
+        }
+      }
+    }, {
+      key: 'removeComponent',
+      value: function removeComponent(ids) {
+        var _this3 = this;
 
-      return this.page.getComponent(this.parent);
-    },
+        var targetIds = ids;
 
-    /**
-     * Get list of required modules
-     * @returns {Object[]}
-     */
-    getRequiredModules: function() {
+        if (typeof ids === 'string') {
+          targetIds = [ids];
+        }
 
-      return [];
-    },
+        _lodash2.default.each(targetIds, function (id) {
+          var componentInstance = _this3.components[id];
 
-    /**
-     * Initialize component
-     * @param {Object} params
-     */
-    initialize: function(params) {
+          // Remove references
+          if (typeof componentInstance !== 'undefined') {
+            componentInstance.reset();
+            componentInstance.node.remove();
+            delete _this3.components[id];
+          }
+        });
+      }
+    }, {
+      key: 'setDefaultSubscribers',
+      value: function setDefaultSubscribers() {
+        this.eventBus.subscribe(this, 'remove_component', this.removeComponent);
+        this.eventBus.subscribe(this, 'build_components', this.buildComponents);
+        this.eventBus.subscribe(this, 'build_component', this.buildComponent);
+        this.eventBus.subscribe(this, 'build_extensions', this.buildUIExtensions);
+        this.eventBus.subscribe(this, 'component_build_finished', this.onComponentBuildFinished);
+      }
+    }]);
 
-      this.id = params.id;
-      this.node = params.node;
-      this.name = params.name;
-      this.eventBus = params.eventBus;
-      this.page = params.page;
+    return BasePrototype;
+  }();
 
-      // Keep default data
+  exports.default = BasePrototype;
+  module.exports = exports['default'];
+});
+(function (global, factory) {
+  if (typeof define === "function" && define.amd) {
+    define('ppr.page', ['module', 'exports', 'ppr.page.baseprototype'], factory);
+  } else if (typeof exports !== "undefined") {
+    factory(module, exports, require('ppr.page.baseprototype'));
+  } else {
+    var mod = {
+      exports: {}
+    };
+    factory(mod, mod.exports, global.pprPageBaseprototype);
+    global.pprPage = mod.exports;
+  }
+})(this, function (module, exports, _pprPage) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+
+  var _pprPage2 = _interopRequireDefault(_pprPage);
+
+  function _interopRequireDefault(obj) {
+    return obj && obj.__esModule ? obj : {
+      default: obj
+    };
+  }
+
+  exports.default = {
+    BasePrototype: _pprPage2.default
+  };
+  module.exports = exports['default'];
+});
+(function (global, factory) {
+  if (typeof define === "function" && define.amd) {
+    define('ppr.component.baseprototype', ['module', 'exports', 'jquery', 'lodash', 'ppr.library.utils.object'], factory);
+  } else if (typeof exports !== "undefined") {
+    factory(module, exports, require('jquery'), require('lodash'), require('ppr.library.utils.object'));
+  } else {
+    var mod = {
+      exports: {}
+    };
+    factory(mod, mod.exports, global.$, global._, global.pprLibraryUtilsObject);
+    global.pprComponentBaseprototype = mod.exports;
+  }
+})(this, function (module, exports, _jquery, _lodash, _pprLibraryUtils) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+
+  var _jquery2 = _interopRequireDefault(_jquery);
+
+  var _lodash2 = _interopRequireDefault(_lodash);
+
+  var _pprLibraryUtils2 = _interopRequireDefault(_pprLibraryUtils);
+
+  function _interopRequireDefault(obj) {
+    return obj && obj.__esModule ? obj : {
+      default: obj
+    };
+  }
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var _createClass = function () {
+    function defineProperties(target, props) {
+      for (var i = 0; i < props.length; i++) {
+        var descriptor = props[i];
+        descriptor.enumerable = descriptor.enumerable || false;
+        descriptor.configurable = true;
+        if ("value" in descriptor) descriptor.writable = true;
+        Object.defineProperty(target, descriptor.key, descriptor);
+      }
+    }
+
+    return function (Constructor, protoProps, staticProps) {
+      if (protoProps) defineProperties(Constructor.prototype, protoProps);
+      if (staticProps) defineProperties(Constructor, staticProps);
+      return Constructor;
+    };
+  }();
+
+  var BasePrototype = function () {
+    function BasePrototype(node) {
+      var params = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+      _classCallCheck(this, BasePrototype);
+
+      this.node = node;
+      this.id = params.id || _lodash2.default.uniqueId('Component_');
+      this.name = params.name || null;
+      this.eventBus = params.eventBus || null;
+      this.page = params.page || null;
       this.cacheData = this.data;
+      this.children = undefined;
+      this.data = {};
+      this.parent = undefined;
+      this.messages = {};
+      this.isBuilt = false;
 
       this.node.attr({
         'data-component': this.name,
         'data-component-id': this.id
       });
 
-      // Set href
-      if (this.node.attr('data-component-href')) {
-        this.href = this.node.attr('data-component-href');
-      }
-
       // Set page data
       if (this.node.attr('data-component-data')) {
-
-        this.data = $.extend({}, this.data, ObjectUtils.parseJSON(
-          this.node.attr('data-component-data')
-        ));
+        this.data = Object.assign({}, this.data, _pprLibraryUtils2.default.parseJSON(this.node.attr('data-component-data')));
       }
-    },
-
-    /**
-     * Check whether component is ready to be built
-     * @returns {Object} promise
-     */
-    isBuildable: function() {
-      return $.Deferred().resolve().promise();
-    },
-
-    /**
-     * Reset component to original state
-     */
-    reset: function() {
-
-      this.data = $.extend(true, {}, this.cacheData);
-      this.href = null;
-      this.isBuilt = false;
-
-      // Unsubscribe events
-      this.eventBus.unsubscribe(this.cacheSubscribers);
-    },
-
-    /**
-     * Set module messages
-     * @param {Object} messages
-     */
-    setModuleMessages: function(messages) {
-      this.messages = messages;
     }
-  };
+
+    /**
+     * Function to be called when build is finished
+     */
+
+
+    _createClass(BasePrototype, [{
+      key: 'afterBuild',
+      value: function afterBuild() {
+        this.eventBus.publish('component_build_finished', this.id);
+        this.isBuilt = true;
+      }
+    }, {
+      key: 'build',
+      value: function build() {
+        // eslint-disable-line
+        return true;
+      }
+    }, {
+      key: 'getChildren',
+      value: function getChildren() {
+        var _this = this;
+
+        if (typeof this.children === 'undefined') {
+          (function () {
+            var componentIds = [];
+            _lodash2.default.each(_this.node.find('[data-component]'), function (elem) {
+              var componentId = (0, _jquery2.default)(elem).attr('data-component-id');
+              var component = _this.page.getComponent(componentId);
+
+              if (component.getParent().id === _this.id) {
+                componentIds.push(componentId);
+              }
+            });
+
+            _this.children = componentIds;
+          })();
+        }
+
+        var result = [];
+
+        _lodash2.default.each(this.children, function (component) {
+          result.push(_this.page.getComponent(component));
+        });
+
+        return result;
+      }
+    }, {
+      key: 'getParent',
+      value: function getParent() {
+        if (typeof this.parent !== 'undefined') {
+          return this.page.getComponent(this.parent);
+        }
+
+        var parentElem = this.node.parents('[data-component]:first');
+
+        var parent = null;
+
+        if (parentElem.length) {
+          parent = parentElem.attr('data-component-id');
+        }
+
+        this.parent = parent;
+
+        return this.page.getComponent(this.parent);
+      }
+    }, {
+      key: 'getRequiredModules',
+      value: function getRequiredModules() {
+        // eslint-disable-line
+        return [];
+      }
+    }, {
+      key: 'isBuildable',
+      value: function isBuildable() {
+        // eslint-disable-line
+        return _jquery2.default.Deferred().resolve().promise();
+      }
+    }, {
+      key: 'reset',
+      value: function reset() {
+        this.data = _jquery2.default.extend(true, {}, this.cacheData);
+        this.href = null;
+        this.isBuilt = false;
+
+        // Unsubscribe events
+        this.eventBus.unsubscribeByScope(this);
+      }
+    }, {
+      key: 'setModuleMessages',
+      value: function setModuleMessages(messages) {
+        this.messages = messages;
+      }
+    }]);
+
+    return BasePrototype;
+  }();
+
+  exports.default = BasePrototype;
+  module.exports = exports['default'];
 });
-
-(function(root, factory) {
-
-  // AMD
-  // istanbul ignore next
-  if (typeof define === 'function' && define.amd) {
-    define('ppr.component.reloadable_prototype', [
-      'ppr.component.base_prototype',
-      'jquery'
-    ], factory);
+(function (global, factory) {
+  if (typeof define === "function" && define.amd) {
+    define('ppr.component.reloadableprototype', ['module', 'exports', 'jquery', 'ppr.component.baseprototype'], factory);
+  } else if (typeof exports !== "undefined") {
+    factory(module, exports, require('jquery'), require('ppr.component.baseprototype'));
+  } else {
+    var mod = {
+      exports: {}
+    };
+    factory(mod, mod.exports, global.$, global.pprComponentBaseprototype);
+    global.pprComponentReloadableprototype = mod.exports;
   }
-
-  // Node, CommonJS
-  else if (typeof exports === 'object') {
-    module.exports = factory(
-      require('./baseprototype'),
-      require('jquery')
-    );
-  }
-
-  // Browser globals
-  // istanbul ignore next
-  else {
-    root.ppr.component.reloadable_prototype = factory(
-      root.ppr.component.base_prototype,
-      root.vendor.$
-    );
-  }
-})(this, function(BasePrototype, $) {
-
+})(this, function (module, exports, _jquery, _pprComponent) {
   'use strict';
 
-  return BasePrototype.createComponent({
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
 
-    componentLoaderWrapper: null,
+  var _jquery2 = _interopRequireDefault(_jquery);
+
+  var _pprComponent2 = _interopRequireDefault(_pprComponent);
+
+  function _interopRequireDefault(obj) {
+    return obj && obj.__esModule ? obj : {
+      default: obj
+    };
+  }
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var _createClass = function () {
+    function defineProperties(target, props) {
+      for (var i = 0; i < props.length; i++) {
+        var descriptor = props[i];
+        descriptor.enumerable = descriptor.enumerable || false;
+        descriptor.configurable = true;
+        if ("value" in descriptor) descriptor.writable = true;
+        Object.defineProperty(target, descriptor.key, descriptor);
+      }
+    }
+
+    return function (Constructor, protoProps, staticProps) {
+      if (protoProps) defineProperties(Constructor.prototype, protoProps);
+      if (staticProps) defineProperties(Constructor, staticProps);
+      return Constructor;
+    };
+  }();
+
+  function _possibleConstructorReturn(self, call) {
+    if (!self) {
+      throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+    }
+
+    return call && (typeof call === "object" || typeof call === "function") ? call : self;
+  }
+
+  function _inherits(subClass, superClass) {
+    if (typeof superClass !== "function" && superClass !== null) {
+      throw new TypeError("Super expression must either be null or a function, not " + typeof superClass);
+    }
+
+    subClass.prototype = Object.create(superClass && superClass.prototype, {
+      constructor: {
+        value: subClass,
+        enumerable: false,
+        writable: true,
+        configurable: true
+      }
+    });
+    if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
+  }
+
+  var ReloadablePrototype = function (_BasePrototype) {
+    _inherits(ReloadablePrototype, _BasePrototype);
+
+    function ReloadablePrototype(node) {
+      var params = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+      _classCallCheck(this, ReloadablePrototype);
+
+      var _this = _possibleConstructorReturn(this, (ReloadablePrototype.__proto__ || Object.getPrototypeOf(ReloadablePrototype)).call(this, node, params));
+
+      _this.href = null;
+
+      // Set href
+      if (_this.node.attr('data-component-href')) {
+        _this.href = _this.node.attr('data-component-href');
+      }
+
+      _this.componentLoaderWrapper = null;
+      return _this;
+    }
 
     /**
      * @inheritdoc
      */
-    afterBuild: function() {
 
-      this.componentLoaderWrapper = this.node.find('.component-loader__wrapper');
 
-      var subscribers = [
-        this.eventBus.subscribe(this, 'reload', this.reload, this.id),
-        this.eventBus.subscribe(this, 'reload_started', this.onReloadStarted, this.id),
-        this.eventBus.subscribe(this, 'reload_ready', this.onReloadReady, this.id),
-        this.eventBus.subscribe(this, 'reload_components', this.reload)
-      ];
+    _createClass(ReloadablePrototype, [{
+      key: 'afterBuild',
+      value: function afterBuild() {
+        this.componentLoaderWrapper = this.node.find('.component-loader__wrapper');
 
-      this.cacheSubscribers = this.cacheSubscribers.concat(subscribers);
+        this.eventBus.subscribe(this, 'reload', this.reload, this.id);
+        this.eventBus.subscribe(this, 'reload_started', this.onReloadStarted, this.id);
+        this.eventBus.subscribe(this, 'reload_ready', this.onReloadReady, this.id);
+        this.eventBus.subscribe(this, 'reload_components', this.reload);
 
-      // Publish build finished
-      this.eventBus.publish('component_build_finished', this.id);
+        // Publish build finished
+        this.eventBus.publish('component_build_finished', this.id);
 
-      this.isBuilt = true;
-    },
-
-    /**
-     * Function to be called when reload is started
-     */
-    onReloadStarted: function() {
-
-      if (this.componentLoaderWrapper.length) {
-        this.componentLoaderWrapper.addClass('component-loader__wrapper--active');
+        this.isBuilt = true;
       }
-    },
+    }, {
+      key: 'onReloadStarted',
+      value: function onReloadStarted() {
+        if (this.componentLoaderWrapper.length) {
+          this.componentLoaderWrapper.addClass('component-loader__wrapper--active');
+        }
+      }
+    }, {
+      key: 'onReloadReady',
+      value: function onReloadReady(node) {
+        var targetNode = node.filter('*:not(text):not(comment)');
 
-    /**
-     * Function to be called when ajax is done
-     */
-    onReloadReady: function(node) {
+        this.reset();
 
-      // Pick first element
-      node = node.filter('*:not(text):not(comment)');
+        // Replace nodes
+        this.node.replaceWith(targetNode);
 
-      this.reset();
+        // Use existing id
+        targetNode.attr('data-component-id', this.id);
 
-      // Replace nodes
-      this.node.replaceWith(node);
+        // Rebuild component
+        this.eventBus.publish('build_component', targetNode);
+      }
+    }, {
+      key: 'reload',
+      value: function reload() {
+        var _this2 = this;
 
-      // Use existing id
-      node.attr('data-component-id', this.id);
+        this.eventBus.publishTo(this.id, 'reload_started');
 
-      // Rebuild component
-      this.eventBus.publish('build_component', node);
-    },
+        // Load component html
+        _jquery2.default.get(this.href).done(function (html) {
+          _this2.eventBus.publishTo(_this2.id, 'reload_ready', (0, _jquery2.default)(html));
+        });
+      }
+    }]);
 
-    /**
-     * Reload component
-     */
-    reload: function() {
+    return ReloadablePrototype;
+  }(_pprComponent2.default);
 
-      var _this = this;
+  exports.default = ReloadablePrototype;
+  module.exports = exports['default'];
+});
+(function (global, factory) {
+  if (typeof define === "function" && define.amd) {
+    define('ppr.component', ['module', 'exports', 'ppr.component.baseprototype', 'ppr.component.reloadableprototype'], factory);
+  } else if (typeof exports !== "undefined") {
+    factory(module, exports, require('ppr.component.baseprototype'), require('ppr.component.reloadableprototype'));
+  } else {
+    var mod = {
+      exports: {}
+    };
+    factory(mod, mod.exports, global.pprComponentBaseprototype, global.pprComponentReloadableprototype);
+    global.pprComponent = mod.exports;
+  }
+})(this, function (module, exports, _pprComponent, _pprComponent3) {
+  'use strict';
 
-      this.eventBus.publishTo(this.id, 'reload_started');
-
-      // Load component html
-      $.get(this.href).done(function(html) {
-        _this.eventBus.publishTo(_this.id, 'reload_ready', $(html));
-      });
-    }
+  Object.defineProperty(exports, "__esModule", {
+    value: true
   });
+
+  var _pprComponent2 = _interopRequireDefault(_pprComponent);
+
+  var _pprComponent4 = _interopRequireDefault(_pprComponent3);
+
+  function _interopRequireDefault(obj) {
+    return obj && obj.__esModule ? obj : {
+      default: obj
+    };
+  }
+
+  exports.default = {
+    BasePrototype: _pprComponent2.default,
+    ReloadablePrototype: _pprComponent4.default
+  };
+  module.exports = exports['default'];
 });
+(function (global, factory) {
+  if (typeof define === "function" && define.amd) {
+    define("ppr.module.baseprototype", ["module", "exports"], factory);
+  } else if (typeof exports !== "undefined") {
+    factory(module, exports);
+  } else {
+    var mod = {
+      exports: {}
+    };
+    factory(mod, mod.exports);
+    global.pprModuleBaseprototype = mod.exports;
+  }
+})(this, function (module, exports) {
+  "use strict";
 
-(function(root, factory) {
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
 
-  // AMD
-  // istanbul ignore next
-  if (typeof define === 'function' && define.amd) {
-    define('ppr.module.base_prototype', ['jquery'], factory);
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
   }
 
-  // Node, CommonJS
-  else if (typeof exports === 'object') {
-    module.exports = factory(require('jquery'));
-  }
+  var _createClass = function () {
+    function defineProperties(target, props) {
+      for (var i = 0; i < props.length; i++) {
+        var descriptor = props[i];
+        descriptor.enumerable = descriptor.enumerable || false;
+        descriptor.configurable = true;
+        if ("value" in descriptor) descriptor.writable = true;
+        Object.defineProperty(target, descriptor.key, descriptor);
+      }
+    }
 
-  // Browser globals
-  // istanbul ignore next
-  else {
-    root.ppr.module.base_prototype = factory(root.vendor.$);
-  }
-})(this, function($) {
+    return function (Constructor, protoProps, staticProps) {
+      if (protoProps) defineProperties(Constructor.prototype, protoProps);
+      if (staticProps) defineProperties(Constructor, staticProps);
+      return Constructor;
+    };
+  }();
 
+  var BasePrototype = function () {
+    function BasePrototype() {
+      _classCallCheck(this, BasePrototype);
+    }
+
+    _createClass(BasePrototype, null, [{
+      key: "initialize",
+      value: function initialize(configs, eventBus) {
+        this.eventBus = eventBus;
+        this.configList = Object.assign({}, {}, configs);
+        this.messages = {};
+      }
+    }, {
+      key: "build",
+      value: function build() {
+        // eslint-disable-line
+        return true;
+      }
+    }, {
+      key: "getMessages",
+      value: function getMessages() {
+        return this.messages;
+      }
+    }]);
+
+    return BasePrototype;
+  }();
+
+  exports.default = BasePrototype;
+  module.exports = exports["default"];
+});
+(function (global, factory) {
+  if (typeof define === "function" && define.amd) {
+    define('ppr.module', ['module', 'exports', 'ppr.module.baseprototype'], factory);
+  } else if (typeof exports !== "undefined") {
+    factory(module, exports, require('ppr.module.baseprototype'));
+  } else {
+    var mod = {
+      exports: {}
+    };
+    factory(mod, mod.exports, global.pprModuleBaseprototype);
+    global.pprModule = mod.exports;
+  }
+})(this, function (module, exports, _pprModule) {
   'use strict';
 
-  return {
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
 
-    isInitialized: false,
-    configList: {},
-    eventBus: undefined,
-    messages: {},
+  var _pprModule2 = _interopRequireDefault(_pprModule);
 
-    /**
-     * Build module
-     */
-    build: function() {
+  function _interopRequireDefault(obj) {
+    return obj && obj.__esModule ? obj : {
+      default: obj
+    };
+  }
 
-    },
+  exports.default = {
+    BasePrototype: _pprModule2.default
+  };
+  module.exports = exports['default'];
+});
+(function (global, factory) {
+  if (typeof define === "function" && define.amd) {
+    define('ppr.ui.builderprototype', ['module', 'exports', 'ppr.library.utils.loader'], factory);
+  } else if (typeof exports !== "undefined") {
+    factory(module, exports, require('ppr.library.utils.loader'));
+  } else {
+    var mod = {
+      exports: {}
+    };
+    factory(mod, mod.exports, global.pprLibraryUtilsLoader);
+    global.pprUiBuilderprototype = mod.exports;
+  }
+})(this, function (module, exports, _pprLibraryUtils) {
+  'use strict';
 
-    /**
-     * Initialize module
-     * @param {Object} configs  list of configurations
-     * @param {Object} eventBus global event bus instance
-     */
-    initialize: function(configs, eventBus) {
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
 
-      // Already initialized
-      if (this.isInitialized) {
+  var _pprLibraryUtils2 = _interopRequireDefault(_pprLibraryUtils);
+
+  function _interopRequireDefault(obj) {
+    return obj && obj.__esModule ? obj : {
+      default: obj
+    };
+  }
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var _createClass = function () {
+    function defineProperties(target, props) {
+      for (var i = 0; i < props.length; i++) {
+        var descriptor = props[i];
+        descriptor.enumerable = descriptor.enumerable || false;
+        descriptor.configurable = true;
+        if ("value" in descriptor) descriptor.writable = true;
+        Object.defineProperty(target, descriptor.key, descriptor);
+      }
+    }
+
+    return function (Constructor, protoProps, staticProps) {
+      if (protoProps) defineProperties(Constructor.prototype, protoProps);
+      if (staticProps) defineProperties(Constructor, staticProps);
+      return Constructor;
+    };
+  }();
+
+  var BuilderPrototype = function () {
+    function BuilderPrototype() {
+      _classCallCheck(this, BuilderPrototype);
+    }
+
+    _createClass(BuilderPrototype, [{
+      key: 'build',
+      value: function build() {
+        // eslint-disable-line
         return false;
       }
-
-      this.eventBus = eventBus;
-      this.configList = $.extend({}, this.configList, configs);
-
-      // Mark as initialized
-      this.isInitialized = true;
-
-      // Build
-      this.build();
-
-      return true;
-    },
-
-    /**
-     * Get list of messages
-     */
-    getMessages: function() {
-      return this.messages;
-    }
-  };
-});
-
-(function(root, factory) {
-
-  // AMD
-  // istanbul ignore next
-  if (typeof define === 'function' && define.amd) {
-    define('ppr.page.base_prototype', [
-      'ppr.config',
-      'ppr.library.utils.object',
-      'ppr.library.utils.loader',
-      'ppr.library.event_bus_prototype',
-      'jquery',
-      'lodash'
-    ], factory);
-  }
-
-  // Node, CommonJS
-  else if (typeof exports === 'object') {
-    module.exports = factory(
-      require('../ppr.config'),
-      require('../library/utils/object'),
-      require('../library/utils/loader'),
-      require('../library/eventbusprototype'),
-      require('jquery'),
-      require('lodash')
-    );
-  }
-
-  // Browser globals
-  // istanbul ignore next
-  else {
-    root.ppr.page.base_prototype = factory(
-      root.ppr.config,
-      root.ppr.library.utils.object,
-      root.ppr.library.utils.loader,
-      root.ppr.library.event_bus_prototype,
-      root.vendor.$,
-      root.vendor._
-    );
-  }
-})(this, function(Config, ObjectUtils, UniversalLoader, EventBusPrototype, $, _) {
-
-  'use strict';
-
-  return {
-
-    eventBus: new EventBusPrototype(),
-    name: null,
-    node: null,
-    components: {},
-    data: null,
-
-    cacheComponentReady: [],
-
-    /**
-     * Create and return a new page based on this one
-     */
-    createPage: function(obj) {
-      return ObjectUtils.assign({}, this, obj);
-    },
-
-    /**
-     * Function to be triggered when build is done
-     */
-    afterBuild: function() {
-
-      this.setDefaultSubscribers();
-
-      this.buildComponents(this.node);
-      this.buildUIExtensions();
-    },
-
-    /**
-     * Build page
-     * @returns {Boolean|undefined}
-     */
-    build: function() {
-      return true;
-    },
-
-    /**
-     * Build component
-     * @param {Object} node jQuery node of element
-     */
-    buildComponent: function(node) {
-
-      var _this = this,
-        namespace,
-        name = node.attr('data-component').trim(),
-        instanceName = _.snakeCase(name),
-        params = {},
-        loaderParams = {};
-
-      // Use custom name if present
-      if (name.length > 0) {
-        namespace = 'ppr.component.' + instanceName;
-        loaderParams.custom = true;
-      } else {
-
-        // Detected to be reloadable
-        if (node.attr('data-component-href')) {
-          namespace = 'ppr.component.reloadable_prototype';
-          name = 'reloadable_prototype';
-        }
-
-        // Normal component
-        else {
-          namespace = 'ppr.component.base_prototype';
-          name = 'base_prototype';
-        }
-      }
-
-      // Use existing id
-      if (node.attr('data-component-id')) {
-        params.id = node.attr('data-component-id');
-      }
-
-      // Create new id
-      else {
-        params.id = _.uniqueId('Component_');
-      }
-
-      // Check that component is not already built
-      if (typeof this.components[params.id] !== 'undefined') {
-
-        // Already built
-        if (this.components[params.id].isBuilt) {
-          return false;
-        }
-      }
-
-      params.name = name;
-      params.node = node;
-      params.eventBus = this.eventBus;
-      params.page = this;
-
-      UniversalLoader.load(namespace, loaderParams, function(ComponentPrototype) {
-
-        // No component instance found
-        if (typeof ComponentPrototype === 'undefined') {
+    }], [{
+      key: 'initialize',
+      value: function initialize() {
+        if (!this.shouldBuild()) {
           return false;
         }
 
-        // Instantiate prototype
-        var instance = ComponentPrototype.createComponent({});
+        var targetDependencies = this.getDependencies();
+        var instance = new this();
 
-        // Remember instance
-        _this.components[params.id] = instance;
-
-        // Initialize
-        instance.initialize(params);
-
-        // Map required modules to namespaces
-        var requiredModuleNames = instance.getRequiredModules(),
-          requiredModules = _.map(requiredModuleNames, function(namespace) {
-            return 'ppr.module.' + namespace;
-          });
-
-        // Load modules
-        UniversalLoader.load(requiredModules, { custom: true }, function() {
-
-          var modules = Array.prototype.slice.call(arguments),
-            messages = {};
-
-          // Initialize modules
-          _.each(modules, function(module, index) {
-            module.initialize({}, _this.eventBus);
-            messages[requiredModuleNames[index]] = module.getMessages();
-          });
-
-          instance.setModuleMessages(messages);
-
-          // Wait until instance is buildable
-          instance.isBuildable().then(function(data) {
-
-            // Component build failed
-            if (instance.build(data) === false) {
-
-              // Remove reference
-              delete _this.components[params.id];
-
-              // Remove from DOM
-              node.remove();
-
-              return;
-            }
-
-            // After build
-            instance.afterBuild();
-          });
+        _pprLibraryUtils2.default.load(targetDependencies, { custom: true }, function () {
+          instance.build.apply(instance, arguments);
         });
-      });
-    },
 
-    /**
-     * Build all components in container node
-     */
-    buildComponents: function(node) {
-
-      var _this = this;
-
-      // Loop through components
-      node.find('[data-component]').each(function(index, element) {
-        _this.eventBus.publish('build_component', $(element));
-      });
-    },
-
-    /**
-     * Build UI extensions
-     */
-    buildUIExtensions: function() {
-
-      // Load builders
-      UniversalLoader.load(Config.get('ui.builders', []), { custom: true }, function() {
-        var builders = Array.prototype.slice.call(arguments);
-
-        _.each(builders, function(builder) {
-          builder.initialize();
-        });
-      });
-    },
-
-    /**
-     * Get component by id
-     * @param {string} id component id
-     * @returns {Object}
-     */
-    getComponent: function(id) {
-      return typeof this.components[id] !== 'undefined' ?
-        this.components[id] : null;
-    },
-
-    /**
-     * Initialize page instance
-     * @param {Object} params list of parameters
-     */
-    initialize: function(params) {
-
-      this.name = params.name;
-      this.node = params.node;
-      this.data = {};
-
-      // Set page data
-      if (this.node.attr('data-page-data')) {
-
-        this.data = $.extend({}, this.data, ObjectUtils.parseJSON(
-          this.node.attr('data-page-data')
-        ));
+        return true;
       }
-
-      return true;
-    },
-
-    /**
-     * Function to be called when each component is ready
-     * @param {string} componentId
-     */
-    onComponentBuildFinished: function(componentId) {
-
-      this.cacheComponentReady.push(componentId);
-
-      // All components ready
-      if (this.cacheComponentReady.length === _.keys(this.components).length) {
-        this.eventBus.publish('page_build_finished');
+    }, {
+      key: 'shouldBuild',
+      value: function shouldBuild() {
+        // eslint-disable-line
+        return true;
       }
-    },
-
-    /**
-     * Remove component
-     * @param {Object[]|string} ids target component id
-     */
-    removeComponent: function(ids) {
-
-      // Turn into array of ids
-      if (typeof ids === 'string') {
-        ids = [ids];
+    }, {
+      key: 'getDependencies',
+      value: function getDependencies() {
+        // eslint-disable-line
+        return [];
       }
+    }]);
 
-      var _this = this;
+    return BuilderPrototype;
+  }();
 
-      _.each(ids, function(id) {
-
-        var componentInstance = _this.components[id];
-
-        // Remove references
-        if (typeof componentInstance !== 'undefined') {
-          componentInstance.reset();
-          componentInstance.node.remove();
-          delete _this.components[id];
-        }
-      });
-    },
-
-    /**
-     * Set default subscribers
-     */
-    setDefaultSubscribers: function() {
-
-      this.eventBus.subscribe(this, 'remove_component', this.removeComponent);
-      this.eventBus.subscribe(this, 'build_components', this.buildComponents);
-      this.eventBus.subscribe(this, 'build_component', this.buildComponent);
-      this.eventBus.subscribe(this, 'build_extensions', this.buildUIExtensions);
-      this.eventBus.subscribe(this, 'component_build_finished', this.onComponentBuildFinished);
-    }
-  };
+  exports.default = BuilderPrototype;
+  module.exports = exports['default'];
 });
-
-(function(root, factory) {
-
-  // AMD
-  // istanbul ignore next
-  if (typeof define === 'function' && define.amd) {
-    define('ppr.ui.builder_prototype', [
-      'ppr.library.utils.loader',
-      'lodash'
-    ], factory);
+(function (global, factory) {
+  if (typeof define === "function" && define.amd) {
+    define('ppr.ui', ['module', 'exports', 'ppr.ui.builderprototype'], factory);
+  } else if (typeof exports !== "undefined") {
+    factory(module, exports, require('ppr.ui.builderprototype'));
+  } else {
+    var mod = {
+      exports: {}
+    };
+    factory(mod, mod.exports, global.pprUiBuilderprototype);
+    global.pprUi = mod.exports;
   }
-
-  // Node, CommonJS
-  else if (typeof exports === 'object') {
-    module.exports = factory(
-      require('../library/utils/loader'),
-      require('lodash')
-    );
-  }
-
-  // Browser globals
-  // istanbul ignore next
-  else {
-    root.ppr.ui.builder_prototype = factory(root.ppr.library.utils.loader, root.vendor._);
-  }
-})(this, function(UniversalLoader, _) {
-
+})(this, function (module, exports, _pprUi) {
   'use strict';
 
-  return {
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
 
-    /**
-     * Initialize builder
-     * @returns {Boolean}
-     */
-    initialize: function() {
-      var _this = this;
+  var _pprUi2 = _interopRequireDefault(_pprUi);
 
-      if (!this.shouldBuild()) {
-        return false;
-      }
+  function _interopRequireDefault(obj) {
+    return obj && obj.__esModule ? obj : {
+      default: obj
+    };
+  }
 
-      UniversalLoader.load(this.getDependencies(), { custom: true }, function() {
-        _this.build.apply(_this, Array.prototype.slice.call(arguments));
-      });
-    },
-
-    /**
-     * Check whether builder should build
-     * @returns {Boolean}
-     */
-    shouldBuild: function() {
-      return true;
-    },
-
-    /**
-     * Get list of dependencies to be loaded
-     * @returns {Object[]}
-     */
-    getDependencies: function() {
-      return [];
-    }
+  exports.default = {
+    BuilderPrototype: _pprUi2.default
   };
+  module.exports = exports['default'];
 });
-
-(function(root, factory) {
-
-  // AMD
-  // istanbul ignore next
-  if (typeof define === 'function' && define.amd) {
-    define('ppr', [
-      'jquery',
-      'lodash',
-      'ppr.library.utils.loader',
-      'ppr.config'
-    ], factory);
+(function (global, factory) {
+  if (typeof define === "function" && define.amd) {
+    define('ppr', ['module', 'exports', 'jquery', 'lodash', 'ppr.library.utils.loader', 'ppr.config'], factory);
+  } else if (typeof exports !== "undefined") {
+    factory(module, exports, require('jquery'), require('lodash'), require('ppr.library.utils.loader'), require('ppr.config'));
+  } else {
+    var mod = {
+      exports: {}
+    };
+    factory(mod, mod.exports, global.$, global._, global.pprLibraryUtilsLoader, global.pprConfig);
+    global.ppr = mod.exports;
   }
-
-  // Node, CommonJS
-  else if (typeof exports === 'object') {
-    module.exports = factory(
-      require('jquery'),
-      require('lodash'),
-      require('./library/utils/loader'),
-      require('./ppr.config')
-    );
-  }
-
-  // Browser globals
-  // istanbul ignore next
-  else {
-    root.ppr = root.vendor._.assign(root.ppr, factory(
-      root.vendor.$,
-      root.vendor._,
-      root.ppr.library.utils.loader,
-      root.ppr.config
-    ));
-  }
-})(this, function($, _, UniversalLoader, Config) {
-
+})(this, function (module, exports, _jquery, _lodash, _pprLibraryUtils, _ppr) {
   'use strict';
 
-  return {
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+
+  var _jquery2 = _interopRequireDefault(_jquery);
+
+  var _lodash2 = _interopRequireDefault(_lodash);
+
+  var _pprLibraryUtils2 = _interopRequireDefault(_pprLibraryUtils);
+
+  var _ppr2 = _interopRequireDefault(_ppr);
+
+  function _interopRequireDefault(obj) {
+    return obj && obj.__esModule ? obj : {
+      default: obj
+    };
+  }
+
+  exports.default = {
 
     /**
      * Build the library
      */
-    build: function() {
-
+    build: function build() {
       this.buildPage();
     },
+
 
     /**
      * Build page instance
      */
-    buildPage: function() {
+    buildPage: function buildPage() {
+      var _this = this;
 
-      var _this = this,
-        namespace = 'ppr.page.base_prototype',
-        node = $('body'),
-        name = node.attr('data-page'),
-        params = {},
-        loaderParams = {};
+      var node = (0, _jquery2.default)('body');
+      var params = {};
+      var loaderParams = {};
+
+      var namespace = 'ppr.page.baseprototype';
+      var name = node.attr('data-page');
 
       // Custom instance required
       if (typeof name !== 'undefined' && name.length > 0) {
-        namespace = 'ppr.page.' + _.snakeCase(name.trim());
+        namespace = 'ppr.page.' + _lodash2.default.replace(_lodash2.default.snakeCase(name.trim()), '_', '-');
         loaderParams.custom = true;
       } else {
         name = 'base_prototype';
       }
 
       params.name = name;
-      params.node = node;
 
-      UniversalLoader.load(namespace, loaderParams, function(PagePrototype) {
-
-        // Instantiate prototype
-        var instance = PagePrototype.createPage({});
-
-        instance.initialize(params);
+      _pprLibraryUtils2.default.load(namespace, loaderParams, function (PagePrototype) {
+        var instance = new PagePrototype(node, params);
 
         // Remember instance
         _this.page_instance = instance;
@@ -2088,25 +2276,27 @@
       });
     },
 
+
     /**
      * Load configuration asynchronously
      * @param {string} source url to load configuration
      * @returns {Object} promise
      */
-    loadConfig: function(source) {
-      var _this = this,
-        deferred = $.Deferred();
+    loadConfig: function loadConfig(source) {
+      var _this2 = this;
 
-      $.ajax({
+      var deferred = _jquery2.default.Deferred();
+
+      _jquery2.default.ajax({
         dataType: 'json',
         url: source,
 
-        success: function(response) {
-          _this.setConfig(response);
+        success: function success(response) {
+          _this2.setConfig(response);
           deferred.resolve(response);
         },
 
-        fail: function() {
+        fail: function fail() {
           deferred.reject('Load configuration failed');
         }
       });
@@ -2114,15 +2304,16 @@
       return deferred.promise();
     },
 
+
     /**
      * Set configuration
      * @param {Object} configs list of configurations
      */
-    setConfig: function(configs) {
-
-      _.each(configs, function(value, key) {
-        Config.set(key, value);
+    setConfig: function setConfig(configs) {
+      _lodash2.default.each(configs, function (value, key) {
+        _ppr2.default.set(key, value);
       });
     }
   };
+  module.exports = exports['default'];
 });

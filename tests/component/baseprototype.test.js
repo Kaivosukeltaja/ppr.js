@@ -1,215 +1,122 @@
-var ComponentBasePrototype = require('../../src/component/baseprototype'),
-  PageBasePrototype = require('../../src/page/baseprototype'),
-  EventBusPrototype = require('../../src/library/eventbusprototype'),
-  _ = require('lodash');
+import _ from 'lodash';
+import $ from 'jquery';
+import chai from 'chai';
+import assert from 'assert';
+import { getComponentNode, getComponentInstance } from 'ppr.tests.helper.component';
+import { getPageInstance, buildPageInstance } from 'ppr.tests.helper.page';
 
-'use strict';
+/* eslint-disable no-unused-expressions */
 
-/**
- * Helper function to test multiple components
- * @param {Object} componentNode
- * @param {Object} component
- * @param {Object} page
- * @param {Object} eventBus
- */
-var componentTester = function(componentId, componentNode, component, page, eventBus) {
-  var params = {};
+describe('ppr.component.baseprototype', () => {
+  describe('component without data', () => {
+    const pageNode = $('<div>');
+    const pageInstance = getPageInstance(pageNode);
 
-  describe('initialize', function() {
+    buildPageInstance(pageInstance);
 
-    beforeEach(function() {
-      params = {
-        id: componentId,
-        node: componentNode.clone(),
-        name: 'base_prototype',
-        eventBus: eventBus,
-        page: page
-      };
+    const componentNode = getComponentNode(pageInstance);
+    const componentInstance = getComponentInstance(pageInstance, componentNode);
+
+    it('should be initialized correctly', () => {
+      chai.expect(componentInstance.id).to.be.not.null;
+      assert.equal(componentInstance.name, 'baseprototype');
+      chai.expect(componentInstance.page).to.be.a('object');
+      chai.expect(componentInstance.eventBus).to.be.a('object');
     });
 
-    it('should initialize with min amount of params', function() {
-
-      params.node = componentNode;
-
-      component.initialize(params);
-
-      chai.assert.equal(component.id, params.id);
-      chai.assert.equal(component.name, params.name);
-      chai.assert.deepEqual(component.data, {});
-      chai.expect(component.href).to.be.null;
-    });
-
-    it('should initialize with data', function() {
-
-      var testData = {
-        testProperty: true,
-        testProperty2: false
-      };
-
-      params.node.attr(
-        'data-component-data', JSON.stringify(testData)
-      );
-
-      component.reset();
-      component.initialize(params);
-
-      chai.assert.equal(component.id, params.id);
-      chai.assert.equal(component.name, params.name);
-      chai.assert.deepEqual(component.data, testData);
-      chai.expect(component.href).to.be.null;
-    });
-
-    it('should initialize with href', function() {
-
-      var componentHref = 'https://www.google.com';
-
-      params.node.attr({
-        'data-component-href': componentHref,
-        'data-component-data': ''
-      });
-
-      component.reset();
-      component.initialize(params);
-
-      chai.assert.equal(component.id, params.id);
-      chai.assert.equal(component.name, params.name);
-      chai.assert.deepEqual(component.data, {});
-      chai.assert.equal(component.href, componentHref);
-    });
-
-    it('should not have any required modules', function() {
-      chai.expect(component.getRequiredModules()).to.have.length(0);
-    });
-
-    it('should be buildable', function(done) {
-
-      component.isBuildable().then(function() {
+    it('should be buildable', (done) => {
+      componentInstance.isBuildable().then(() => {
         done();
       });
     });
-  });
 
-  describe('build', function() {
+    it('should allow adding messages', () => {
+      componentInstance.setModuleMessages({ test_module: { MODULE_TEST_MESSAGE: 'module_test_message' } });
 
-    before(function() {
-
-      // Save reference to page
-      page.components[component.id] = component;
-
-      component.initialize(params);
-    });
-
-    it('should not be built', function() {
-      chai.expect(component.isBuilt).to.be.false;
-    });
-
-    it('should build', function() {
-
-      component.build();
-      component.afterBuild();
-
-      chai.expect(component.isBuilt).to.be.true;
+      chai.expect(_.keys(componentInstance.messages)).to.have.length(1);
     });
   });
-};
 
-describe('ppr.component.base_prototype', function() {
+  describe('component with data', () => {
+    const pageNode = $('<div>');
+    const pageInstance = getPageInstance(pageNode);
 
-  describe('standalone component', function() {
+    buildPageInstance(pageInstance);
 
-    var pageNode, componentNode, component,
-      page, eventBus;
+    const componentNode = getComponentNode(pageInstance, true);
+    const componentInstance = getComponentInstance(pageInstance, componentNode);
 
-    // Build nodes
-    pageNode = $('<body>');
-    componentNode = $('<div>').attr('data-component', '').appendTo(pageNode);
-
-    component = ComponentBasePrototype.createComponent({});
-    page = PageBasePrototype.createPage({});
-
-    eventBus = new EventBusPrototype;
-
-    // Initialize page
-    page.initialize({
-      node: pageNode,
-      name: 'base_prototype'
+    it('should be initialized correctly', () => {
+      chai.expect(componentInstance.data).has.property('test');
+      assert.equal(componentInstance.data.test, 'testing');
     });
+  });
 
-    componentTester(_.uniqueId('Component_'), componentNode, component, page, eventBus);
+  describe('standalone component', () => {
+    const pageNode = $('<div>');
+    const pageInstance = getPageInstance(pageNode);
 
-    it('should allow adding messages', function() {
-      component.setModuleMessages({ test_module: { MODULE_TEST_MESSAGE: 'module_test_message' }});
+    buildPageInstance(pageInstance);
 
-      chai.expect(_.keys(component.messages)).to.have.length(1);
-    });
+    const componentNode = getComponentNode(pageInstance);
+    const componentInstance = getComponentInstance(pageInstance, componentNode);
 
-    describe('references', function() {
-
-      it('should not have any child components', function() {
-        chai.expect(component.getChildren()).to.have.length(0);
+    describe('references', () => {
+      it('should not have any child components', () => {
+        chai.expect(componentInstance.getChildren()).to.have.length(0);
       });
 
-      it('should not have parent component', function() {
-        chai.expect(component.getParent()).to.be.null;
+      it('should not have parent component', () => {
+        chai.expect(componentInstance.getParent()).to.be.null;
       });
     });
   });
 
-  describe('component with references', function() {
+  describe('component with parent component', () => {
+    const pageNode = $('<div>');
+    const pageInstance = getPageInstance(pageNode);
 
-    var pageNode, childComponentNode, childComponent, childComponentId,
-      parentComponentNode, parentComponent, rootPage, eventBus, componentId,
-      secondChildComponentNode, secondChildComponent, secondChildComponentId;
+    buildPageInstance(pageInstance);
 
-    // Build nodes
-    pageNode = $('<div>');
-    parentComponentNode = $('<div>').attr('data-component', '').appendTo(pageNode);
-    childComponentNode = $('<div>').attr('data-component', '');
-    secondChildComponentNode = $('<div>').attr('data-component', '');
+    const parentComponentNode = getComponentNode(pageInstance);
+    const parentComponentInstance = getComponentInstance(
+      pageInstance, parentComponentNode,
+    );
 
-    componentId = _.uniqueId('Component_');
-    childComponentId = _.uniqueId('Component_');
-    secondChildComponentId = _.uniqueId('Component_');
+    const childComponentNode = getComponentNode(parentComponentInstance);
+    const childComponentInstance = getComponentInstance(
+      pageInstance, childComponentNode,
+    );
 
-    parentComponent = ComponentBasePrototype.createComponent({});
-    childComponent = ComponentBasePrototype.createComponent({});
-    secondChildComponent = ComponentBasePrototype.createComponent({});
-    rootPage = PageBasePrototype.createPage({});
-    eventBus = new EventBusPrototype;
+    const secondChildComponentNode = getComponentNode(childComponentNode);
+    const secondChildComponentInstance = getComponentInstance(
+      childComponentInstance, secondChildComponentNode,
+    );
 
-    // Initialize page
-    rootPage.initialize({
-      node: pageNode,
-      name: 'base_prototype'
+    describe('references', () => {
+      before(() => {
+        pageInstance.components[parentComponentInstance.id] = parentComponentInstance;
+        pageInstance.components[childComponentInstance.id] = childComponentInstance;
+        pageInstance.components[secondChildComponentInstance.id] = secondChildComponentInstance;
+      });
+
+      it('should have one child component', () => {
+        chai.expect(parentComponentInstance.getChildren()).to.have.length(1);
+
+        chai.assert.equal(
+          _.first(parentComponentInstance.getChildren()).id,
+          childComponentInstance.id,
+        );
+      });
+
+      it('should have parent component', () => {
+        chai.expect(childComponentInstance.getParent()).to.be.a('object');
+        chai.assert.equal(childComponentInstance.getParent().id, parentComponentInstance.id);
+      });
     });
-
-    componentTester(componentId, parentComponentNode, parentComponent, rootPage, eventBus);
-
-    childComponent.initialize({ node: childComponentNode, id: childComponentId, name: 'base_prototype', eventBus: eventBus, page: rootPage });
-    secondChildComponent.initialize({ node: secondChildComponentNode, id: secondChildComponentId, name: 'base_prototype', eventBus: eventBus, page: rootPage });
-
-    describe('references', function() {
-
-      before(function() {
-
-        // Save references
-        rootPage.components[childComponentId] = childComponent;
-        rootPage.components[secondChildComponentId] = secondChildComponent;
-
-        childComponent.node.appendTo(parentComponent.node);
-        secondChildComponent.node.appendTo(childComponent.node);
-      });
-
-
-      it('should have one child component', function() {
-        chai.expect(parentComponent.getChildren()).to.have.length(1);
-        chai.assert.equal(_.first(parentComponent.getChildren()).id, childComponent.id);
-      });
-
-      it('should have parent component', function() {
-        chai.expect(childComponent.getParent()).to.be.a('object');
-        chai.assert.equal(childComponent.getParent().id, parentComponent.id);
-      });
-    })
   });
 });
+
+export default {
+
+};

@@ -1,115 +1,90 @@
-(function(root, factory) {
+import _ from 'lodash';
+import $ from 'jquery';
 
-  // AMD
-  // istanbul ignore next
-  if (typeof define === 'function' && define.amd) {
-    define('ppr.library.utils.string', ['lodash', 'jquery'], factory);
-  }
+export default {
 
-  // Node, CommonJS
-  else if (typeof exports === 'object') {
-    module.exports = factory(
-      require('lodash'),
-      require('jquery')
-    );
-  }
+  /**
+   * Generate hash from string
+   * @param {string} targetString target string
+   * @returns {number}
+   */
+  generateHash(targetString) {
+    let hash = 0;
+    let i;
+    let chr;
+    let len;
 
-  // Browser globals
-  // istanbul ignore next
-  else {
-    root.ppr.library.utils.string = factory(root.vendor._, root.vendor.$);
-  }
-})(this, function(_, $) {
-
-  'use strict';
-
-  return {
-
-    /**
-     * Generate hash from string
-     * @param {string} targetString target string
-     * @returns {number}
-     */
-    generateHash: function(targetString) {
-      var hash = 0, i, chr, len;
-
-      if (targetString.length === 0) {
-        return hash;
-      }
-
-      for (i = 0, len = targetString.length; i < len; i++) {
-        chr   = targetString.charCodeAt(i);
-        hash  = ((hash << 5) - hash) + chr;
-        hash |= 0;
-      }
-
+    if (targetString.length === 0) {
       return hash;
-    },
-
-    /**
-     * Remove all html from string
-     * @param {string} targetString
-     * @returns {string}
-     */
-    getAsPlainText: function(targetString) {
-
-      return $('<p>').html(targetString).text();
-    },
-
-    /**
-     * Linkify hash tags in text
-     * @param {string} text  target text
-     * @param {string} media target social media (supported values: facebook, instagram, twitter)
-     * @returns {string}
-     */
-    linkifyHashTags: function(text, media) {
-      var targetUrl, mediaUrls;
-
-      mediaUrls = {
-        twitter: 'https://twitter.com/hashtag/',
-        facebook: 'https://www.facebook.com/hashtag/',
-        instagram: 'https://www.instagram.com/explore/tags/'
-      };
-
-      media = media.toLowerCase();
-
-      // Media is unsupported
-      if (typeof mediaUrls[media] === 'undefined') {
-        return text;
-      }
-
-      targetUrl = mediaUrls[media];
-
-      text = text.replace(/[#]+[A-Za-z0-9-_äöåÄÖÅ]+/g, function(t) {
-        var tag, link;
-
-        tag = t.replace('#', '');
-
-        link = $('<a>').
-          attr('class', 'hashtag').
-          attr('href', targetUrl + tag).
-          attr('target', '_blank').
-          text(t);
-
-        return link[0].outerHTML;
-      });
-
-      return text;
-    },
-
-    /**
-     * Replace variables with parameters in string
-     * @param {string} targetString target string that has variables
-     * @param {Object} params       parameters to replace variables
-     * @returns {string}
-     */
-    replaceVariablesWithParameters: function(targetString, params) {
-
-      _.each(params, function(value, key) {
-        targetString = targetString.replace(':' + key, value);
-      });
-
-      return targetString;
     }
-  };
-});
+
+    for (i = 0, len = targetString.length; i < len; i += 1) {
+      chr = targetString.charCodeAt(i);
+      hash = ((hash << 32) - hash) + chr; // eslint-disable-line no-bitwise
+      hash |= 0; // eslint-disable-line no-bitwise
+    }
+
+    return hash;
+  },
+
+  /**
+   * Remove all html from string
+   * @param {string} targetString
+   * @returns {string}
+   */
+  getAsPlainText(targetString) {
+    return $('<p>').html(targetString).text();
+  },
+
+  /**
+   * Linkify hash tags in text
+   * @param {string} text  target text
+   * @param {string} media target social media (supported values: facebook, instagram, twitter)
+   * @returns {string}
+   */
+  linkifyHashTags(text, media) {
+    const mediaUrls = {
+      twitter: 'https://twitter.com/hashtag/',
+      facebook: 'https://www.facebook.com/hashtag/',
+      instagram: 'https://www.instagram.com/explore/tags/',
+    };
+
+    const targetMedia = media.toLowerCase();
+
+    // Media is unsupported
+    if (typeof mediaUrls[targetMedia] === 'undefined') {
+      return text;
+    }
+
+    const targetUrl = mediaUrls[targetMedia];
+
+    const targetText = text.replace(/[#]+[A-Za-z0-9-_äöåÄÖÅ]+/g, (t) => {
+      const tag = t.replace('#', '');
+      const link = $('<a>')
+        .attr('class', 'hashtag')
+        .attr('href', targetUrl + tag)
+        .attr('target', '_blank')
+        .text(t);
+
+      return link[0].outerHTML;
+    });
+
+    return targetText;
+  },
+
+  /**
+   * Replace variables with parameters in string
+   * @param {string} targetString target string that has variables
+   * @param {Object} params       parameters to replace variables
+   * @returns {string}
+   */
+  replaceVariablesWithParameters(targetString, params) {
+    let stringValue = targetString;
+
+    _.each(params, (value, key) => {
+      stringValue = stringValue.replace(`:${key}`, value);
+    });
+
+    return stringValue;
+  },
+};

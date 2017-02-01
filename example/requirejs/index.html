@@ -2,20 +2,51 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>RequireJS Example</title>
+    <title>RequireJS example</title>
     <script data-main="main" src="require.js"></script>
+    <style media="screen">
+      .testing {
+        float: left;
+        width: 25%;
+        border: 1px solid #000;
+        box-sizing: border-box;
+        padding: 20px;
+      }
+
+      .red {
+        background: red;
+        color: #fff;
+      }
+
+      .btn {
+        text-align: center;
+        display: block;
+        width: 100%;
+      }
+    </style>
 </head>
-</head>
-<body data-page-data='{"test": true}'>
-    <div class="test" data-component="testComponent" data-component-href="test.html" data-component-data='{"id": 123}'>Testikomponentti</div>
-    <div class="test" data-component>Testikomponentti</div>
-    <div class="test" data-component="testComponent" data-component-href="test.html" data-component-data='{"id": 124}'>Testikomponentti</div>
-    <div class="test" data-component>Testikomponentti</div>
-    <div class="test" data-component="testComponent" data-component-href="test.html" data-component-data='{"id": 125}'>Testikomponentti</div>
-    <div class="test" data-component>Testikomponentti</div>
-    <div class="test" data-component="testComponent" data-component-href="test.html" data-component-data='{"id": 126}'>Testikomponentti</div>
-    <div class="test" data-component>Testikomponentti</div>
-    <div class="test" data-component="testComponent" data-component-href="test.html" data-component-data='{"id": 127}'>Testikomponentti</div>
-    <div class="test" data-component>Testikomponentti</div>
-</body>
+<body>
+    <div class="test" data-component>
+        <div class="testing" data-component="testComponent" data-component-href="test.html">
+            Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+            <br><br>
+            <button type="button" name="button" class="btn">Reload</button>
+        </div>
+        <div class="testing" data-component="testComponent" data-component-href="test.html">
+            Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+            <br><br>
+            <button type="button" name="button" class="btn">Reload</button>
+        </div>
+        <div class="testing" data-component="testComponent" data-component-href="test.html">
+            Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+            <br><br>
+            <button type="button" name="button" class="btn">Reload</button>
+        </div>
+        <div class="testing" data-component="testComponent" data-component-href="test.html">
+            Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+            <br><br>
+            <button type="button" name="button" class="btn">Reload</button>
+        </div>
+    </div>
+  </body>
 </html>
