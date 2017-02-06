@@ -49,12 +49,10 @@ export default class BasePrototype {
 
     const instanceName = _.replace(_.snakeCase(name), '_', '-');
     const params = {};
-    const loaderParams = {};
 
     // Use custom name if present
     if (name.length > 0) {
       namespace = `ppr.component.${instanceName}`;
-      loaderParams.custom = true;
     } else if (node.attr('data-component-href')) { // Reloadable component
       namespace = 'ppr.component.reloadableprototype';
       name = 'reloadable_prototype';
@@ -81,7 +79,7 @@ export default class BasePrototype {
     params.eventBus = this.eventBus;
     params.page = this;
 
-    UniversalLoader.load(namespace, loaderParams, (ComponentPrototype) => {
+    UniversalLoader.load(namespace, (ComponentPrototype) => {
       if (typeof ComponentPrototype === 'undefined') {
         return;
       }
@@ -97,7 +95,7 @@ export default class BasePrototype {
       const requiredModules = _.map(requiredModuleNames, ns => `ppr.module.${ns}`);
 
       // Load modules
-      UniversalLoader.load(requiredModules, { custom: true }, (...modules) => {
+      UniversalLoader.load(requiredModules, (...modules) => {
         const messages = {};
 
         // Initialize modules
@@ -135,7 +133,7 @@ export default class BasePrototype {
    * Build UI extensions
    */
   buildUIExtensions() { // eslint-disable-line
-    UniversalLoader.load(Config.get('ui.builders', []), { custom: true }, (...builders) => {
+    UniversalLoader.load(Config.get('ui.builders', []), (...builders) => {
       _.each(builders, (builder) => {
         builder.initialize();
       });

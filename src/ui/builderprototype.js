@@ -18,7 +18,7 @@ export default class BuilderPrototype {
     const targetDependencies = this.getDependencies();
     const instance = new this();
 
-    UniversalLoader.load(targetDependencies, { custom: true }, (...dependencies) => {
+    UniversalLoader.load(targetDependencies, (...dependencies) => {
       instance.build(...dependencies);
     });
 

@@ -1,5 +1,7 @@
 import chai from 'chai';
+import $ from 'jquery';
 import Loader from 'ppr.library.utils.loader';
+import ComponentBasePrototype from 'ppr.component.baseprototype';
 
 /* eslint-disable no-unused-expressions */
 describe('ppr.library.utils.loader', () => {
@@ -7,7 +9,10 @@ describe('ppr.library.utils.loader', () => {
     chai.expect(Loader.hasAMDSupport()).to.be.false;
   });
 
-  it('should support CommonJS', () => {
-    //chai.expect(Loader.hasCommonSupport()).to.be.true;
+  it('should load dependency', (done) => {
+    Loader.load(['ppr.component.baseprototype'], (BasePrototype) => {
+      chai.expect(new BasePrototype($('<div>'))).to.be.instanceof(ComponentBasePrototype);
+      done();
+    });
   });
 });

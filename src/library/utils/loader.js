@@ -30,11 +30,10 @@ export default {
   /**
    * Load dependency universally
    * @param {Object[]|string} namespaces names of dependencies
-   * @param {Object}          config     list of configurations
    * @param {function}        callback callback function
    * @returns {*}
    */
-  load(namespaces, config, callback) {
+  load(namespaces, callback) {
     if (!this.isInitialized) {
       this.initialize();
     }
@@ -54,25 +53,7 @@ export default {
 
     // Use AMD
     if (this.hasAMDSupport()) {
-      if (config.custom === true) {
-        targetNamespaces = _.map(targetNamespaces, (namespace) => {
-          let targetNamespace = namespace;
-
-          // Last dot is after last slash
-          if (targetNamespace.lastIndexOf('.') > targetNamespace.lastIndexOf('/')) {
-            targetNamespace = targetNamespace.split('.');
-
-            const className = targetNamespace.pop();
-
-            targetNamespace = `${targetNamespace.join('.')}/${className}`;
-          }
-
-          return targetNamespace;
-        });
-      }
-
-      // eslint-disable-next-line import/no-dynamic-require, global-require
-      return require(targetNamespaces, callback);
+      return require(targetNamespaces, callback); // eslint-disable-line
     }
 
     // Use globals

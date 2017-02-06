@@ -18,7 +18,6 @@ export default {
   buildPage() {
     const node = $('body');
     const params = {};
-    const loaderParams = {};
 
     let namespace = 'ppr.page.baseprototype';
     let name = node.attr('data-page');
@@ -26,14 +25,13 @@ export default {
     // Custom instance required
     if (typeof name !== 'undefined' && name.length > 0) {
       namespace = `ppr.page.${_.replace(_.snakeCase(name.trim()), '_', '-')}`;
-      loaderParams.custom = true;
     } else {
       name = 'base_prototype';
     }
 
     params.name = name;
 
-    UniversalLoader.load(namespace, loaderParams, (PagePrototype) => {
+    UniversalLoader.load(namespace, (PagePrototype) => {
       const instance = new PagePrototype(node, params);
 
       // Remember instance

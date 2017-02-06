@@ -407,11 +407,10 @@
     /**
      * Load dependency universally
      * @param {Object[]|string} namespaces names of dependencies
-     * @param {Object}          config     list of configurations
      * @param {function}        callback callback function
      * @returns {*}
      */
-    load: function load(namespaces, config, callback) {
+    load: function load(namespaces, callback) {
       if (!this.isInitialized) {
         this.initialize();
       }
@@ -431,25 +430,7 @@
 
       // Use AMD
       if (this.hasAMDSupport()) {
-        if (config.custom === true) {
-          targetNamespaces = _lodash2.default.map(targetNamespaces, function (namespace) {
-            var targetNamespace = namespace;
-
-            // Last dot is after last slash
-            if (targetNamespace.lastIndexOf('.') > targetNamespace.lastIndexOf('/')) {
-              targetNamespace = targetNamespace.split('.');
-
-              var className = targetNamespace.pop();
-
-              targetNamespace = targetNamespace.join('.') + '/' + className;
-            }
-
-            return targetNamespace;
-          });
-        }
-
-        // eslint-disable-next-line import/no-dynamic-require, global-require
-        return require(targetNamespaces, callback);
+        return require(targetNamespaces, callback); // eslint-disable-line
       }
 
       // Use globals
@@ -674,7 +655,7 @@
      * @returns {Boolean}
      */
     isSupported: function isSupported() {
-      return typeof window.localStorage !== 'undefined';
+      return typeof window.localStorage !== 'undefined' && window.localStorage !== null;
     },
 
 
@@ -1391,12 +1372,10 @@
 
         var instanceName = _lodash2.default.replace(_lodash2.default.snakeCase(name), '_', '-');
         var params = {};
-        var loaderParams = {};
 
         // Use custom name if present
         if (name.length > 0) {
           namespace = 'ppr.component.' + instanceName;
-          loaderParams.custom = true;
         } else if (node.attr('data-component-href')) {
           // Reloadable component
           namespace = 'ppr.component.reloadableprototype';
@@ -1425,7 +1404,7 @@
         params.eventBus = this.eventBus;
         params.page = this;
 
-        _pprLibraryUtils4.default.load(namespace, loaderParams, function (ComponentPrototype) {
+        _pprLibraryUtils4.default.load(namespace, function (ComponentPrototype) {
           if (typeof ComponentPrototype === 'undefined') {
             return;
           }
@@ -1443,7 +1422,7 @@
           });
 
           // Load modules
-          _pprLibraryUtils4.default.load(requiredModules, { custom: true }, function () {
+          _pprLibraryUtils4.default.load(requiredModules, function () {
             for (var _len = arguments.length, modules = Array(_len), _key = 0; _key < _len; _key++) {
               modules[_key] = arguments[_key];
             }
@@ -1486,7 +1465,7 @@
       key: 'buildUIExtensions',
       value: function buildUIExtensions() {
         // eslint-disable-line
-        _pprLibraryUtils4.default.load(_ppr2.default.get('ui.builders', []), { custom: true }, function () {
+        _pprLibraryUtils4.default.load(_ppr2.default.get('ui.builders', []), function () {
           for (var _len2 = arguments.length, builders = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
             builders[_key2] = arguments[_key2];
           }
@@ -2140,7 +2119,7 @@
         var targetDependencies = this.getDependencies();
         var instance = new this();
 
-        _pprLibraryUtils2.default.load(targetDependencies, { custom: true }, function () {
+        _pprLibraryUtils2.default.load(targetDependencies, function () {
           instance.build.apply(instance, arguments);
         });
 
@@ -2249,7 +2228,6 @@
 
       var node = (0, _jquery2.default)('body');
       var params = {};
-      var loaderParams = {};
 
       var namespace = 'ppr.page.baseprototype';
       var name = node.attr('data-page');
@@ -2257,14 +2235,13 @@
       // Custom instance required
       if (typeof name !== 'undefined' && name.length > 0) {
         namespace = 'ppr.page.' + _lodash2.default.replace(_lodash2.default.snakeCase(name.trim()), '_', '-');
-        loaderParams.custom = true;
       } else {
         name = 'base_prototype';
       }
 
       params.name = name;
 
-      _pprLibraryUtils2.default.load(namespace, loaderParams, function (PagePrototype) {
+      _pprLibraryUtils2.default.load(namespace, function (PagePrototype) {
         var instance = new PagePrototype(node, params);
 
         // Remember instance
