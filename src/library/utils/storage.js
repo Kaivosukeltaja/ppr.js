@@ -24,11 +24,11 @@ export default {
   /**
    * Set item into storage
    * @param {string} key
-   * @param {*}      value
+   * @param {Boolean} value
    */
   set(key, value) {
     if (!this.isEnabled()) {
-      return null;
+      return false;
     }
 
     let targetValue = value;
@@ -42,7 +42,12 @@ export default {
       }
     }
 
-    window.localStorage.setItem(key, targetValue);
+    try {
+      window.localStorage.setItem(key, targetValue);
+    } catch (e) {
+      return false;
+    }
+
     return true;
   },
 

@@ -637,9 +637,23 @@
     return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
   };
 
+  var _extends = Object.assign || function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+
   exports.default = {
 
-    configList: Object.assign({ enabled: true }, _ppr2.default.get('storage', {})),
+    configList: _extends({ enabled: true }, _ppr2.default.get('storage', {})),
 
     /**
      * Check whether storage is enabled
@@ -662,11 +676,11 @@
     /**
      * Set item into storage
      * @param {string} key
-     * @param {*}      value
+     * @param {Boolean} value
      */
     set: function set(key, value) {
       if (!this.isEnabled()) {
-        return null;
+        return false;
       }
 
       var targetValue = value;
@@ -680,7 +694,12 @@
         }
       }
 
-      window.localStorage.setItem(key, targetValue);
+      try {
+        window.localStorage.setItem(key, targetValue);
+      } catch (e) {
+        return false;
+      }
+
       return true;
     },
 
@@ -1300,6 +1319,20 @@
     };
   }
 
+  var _extends = Object.assign || function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+
   function _classCallCheck(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
       throw new TypeError("Cannot call a class as a function");
@@ -1339,7 +1372,7 @@
 
       // Set page data
       if (this.node.attr('data-page-data')) {
-        this.data = Object.assign({}, this.data, _pprLibraryUtils2.default.parseJSON(this.node.attr('data-page-data')));
+        this.data = _extends({}, this.data, _pprLibraryUtils2.default.parseJSON(this.node.attr('data-page-data')));
       }
     }
 
@@ -1592,6 +1625,20 @@
     };
   }
 
+  var _extends = Object.assign || function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+
   function _classCallCheck(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
       throw new TypeError("Cannot call a class as a function");
@@ -1641,7 +1688,7 @@
 
       // Set page data
       if (this.node.attr('data-component-data')) {
-        this.data = Object.assign({}, this.data, _pprLibraryUtils2.default.parseJSON(this.node.attr('data-component-data')));
+        this.data = _extends({}, this.data, _pprLibraryUtils2.default.parseJSON(this.node.attr('data-component-data')));
       }
     }
 
@@ -1960,6 +2007,20 @@
     value: true
   });
 
+  var _extends = Object.assign || function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+
   function _classCallCheck(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
       throw new TypeError("Cannot call a class as a function");
@@ -1993,7 +2054,7 @@
       key: "initialize",
       value: function initialize(configs, eventBus) {
         this.eventBus = eventBus;
-        this.configList = Object.assign({}, {}, configs);
+        this.configList = _extends({}, {}, configs);
         this.messages = {};
       }
     }, {

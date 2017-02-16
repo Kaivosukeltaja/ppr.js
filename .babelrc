@@ -9,6 +9,7 @@
   "presets": ["es2015"],
   "plugins": [
     "add-module-exports",
+    "transform-object-assign",
     ["transform-es2015-modules-umd", {
       "globals": {
         "lodash": "_",

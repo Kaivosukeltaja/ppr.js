@@ -35,10 +35,10 @@ describe('ppr.library.utils.storage', () => {
     });
   });
 
-  it('should return null when not supported', () => {
+  it('should return false when not supported', () => {
     StorageUtils.configList.enabled = false;
 
-    chai.assert.equal(StorageUtils.set('test', true), null);
+    chai.assert.equal(StorageUtils.set('test', true), false);
     chai.assert.equal(StorageUtils.get('test'), null);
 
     StorageUtils.configList.enabled = true;
