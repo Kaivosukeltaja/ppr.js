@@ -46,7 +46,7 @@ export default class ReloadablePrototype extends BasePrototype {
    * Function to be called when ajax is done
    */
   onReloadReady(node) {
-    const targetNode = node.filter('[data-component]');
+    const targetNode = node.filter('[data-component]:first');
 
     this.reset();
 
