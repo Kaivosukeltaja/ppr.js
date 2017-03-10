@@ -18,7 +18,7 @@ describe('ppr.component.reloadableprototype', () => {
 
   describe('#reload', () => {
     before(() => {
-      sinon.stub($, 'get').returns($.Deferred().resolve('<span class="foobar">This element should be ignored</span><div class="reloadedComponent" data-component data-component-data=\'{"test": "testing"}\'></div><div class="anotherComponent" data-component>Ignore this too</div>').promise());
+      sinon.stub($, 'get').returns($.Deferred().resolve('<invalid><span class="foobar">This element should be ignored</span><div class="reloadedComponent" data-component data-component-data=\'{"test": "testing"}\'></div><div class="anotherComponent" data-component>Ignore this too</div>').promise());
     });
 
     after(() => {
