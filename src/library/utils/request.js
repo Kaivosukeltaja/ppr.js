@@ -38,7 +38,13 @@ export default {
       return result;
     }
 
-    const queryString = sourceUrl.substring(searchIndex + 1);
+    let queryString = sourceUrl.substring(searchIndex + 1);
+    const hashIndex = queryString.indexOf('#');
+
+    if (hashIndex > -1) {
+      queryString = queryString.substr(0, hashIndex);
+    }
+
     const queryVariables = queryString.split('&');
 
     _.each(queryVariables, (parameterString) => {

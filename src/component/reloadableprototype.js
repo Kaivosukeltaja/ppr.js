@@ -46,12 +46,17 @@ export default class ReloadablePrototype extends BasePrototype {
    * Function to be called when ajax is done
    */
   onReloadReady(node) {
-    const targetNode = node.filter('*:not(text):not(comment)');
+    const wrappedNode = $('<div></div>').append(node);
+    const targetNode = wrappedNode.find('[data-component]:first');
 
     this.reset();
 
     // Replace nodes
     this.node.replaceWith(targetNode);
+    this.node = targetNode;
+
+    // Add data
+    this.setDataFromNode({});
 
     // Use existing id
     targetNode.attr('data-component-id', this.id);

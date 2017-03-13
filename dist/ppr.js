@@ -589,6 +589,12 @@
       }
 
       var queryString = sourceUrl.substring(searchIndex + 1);
+      var hashIndex = queryString.indexOf('#');
+
+      if (hashIndex > -1) {
+        queryString = queryString.substr(0, hashIndex);
+      }
+
       var queryVariables = queryString.split('&');
 
       _lodash2.default.each(queryVariables, function (parameterString) {
@@ -1686,10 +1692,7 @@
         'data-component-id': this.id
       });
 
-      // Set page data
-      if (this.node.attr('data-component-data')) {
-        this.data = _extends({}, this.data, _pprLibraryUtils2.default.parseJSON(this.node.attr('data-component-data')));
-      }
+      this.setDataFromNode(this.data);
     }
 
     /**
@@ -1768,6 +1771,15 @@
       value: function isBuildable() {
         // eslint-disable-line
         return _jquery2.default.Deferred().resolve().promise();
+      }
+    }, {
+      key: 'setDataFromNode',
+      value: function setDataFromNode() {
+        var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
+        if (this.node.attr('data-component-data')) {
+          this.data = _extends({}, data, _pprLibraryUtils2.default.parseJSON(this.node.attr('data-component-data')));
+        }
       }
     }, {
       key: 'reset',
@@ -1920,12 +1932,17 @@
     }, {
       key: 'onReloadReady',
       value: function onReloadReady(node) {
-        var targetNode = node.filter('*:not(text):not(comment)');
+        var wrappedNode = (0, _jquery2.default)('<div></div>').append(node);
+        var targetNode = wrappedNode.find('[data-component]:first');
 
         this.reset();
 
         // Replace nodes
         this.node.replaceWith(targetNode);
+        this.node = targetNode;
+
+        // Add data
+        this.setDataFromNode({});
 
         // Use existing id
         targetNode.attr('data-component-id', this.id);
