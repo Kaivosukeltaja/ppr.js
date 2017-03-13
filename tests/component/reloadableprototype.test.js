@@ -18,7 +18,7 @@ describe('ppr.component.reloadableprototype', () => {
 
   describe('#reload', () => {
     before(() => {
-      sinon.stub($, 'get').returns($.Deferred().resolve('<div class="reloadedComponent" data-component></div>').promise());
+      sinon.stub($, 'get').returns($.Deferred().resolve('<div class="reloadedComponent" data-component data-component-data=\'{"test": "testing"}\'></div>').promise());
     });
 
     after(() => {
@@ -29,6 +29,7 @@ describe('ppr.component.reloadableprototype', () => {
       componentInstance.eventBus.subscribe(null, 'component_build_finished', (componentId) => {
         if (componentId === componentInstance.id) {
           chai.expect(pageInstance.getComponent(componentId).node.hasClass('reloadedComponent')).to.be.true;
+          chai.expect(componentInstance.data.test).to.equal('testing');
           done();
         }
       });

@@ -52,6 +52,10 @@ export default class ReloadablePrototype extends BasePrototype {
 
     // Replace nodes
     this.node.replaceWith(targetNode);
+    this.node = targetNode;
+
+    // Add data
+    this.setDataFromNode({});
 
     // Use existing id
     targetNode.attr('data-component-id', this.id);
