@@ -1,33 +1,49 @@
 import chai from 'chai';
-import $ from 'jquery';
+import _ from 'lodash';
 import RequestUtils from 'ppr.library.utils.request';
 
-/* eslint-disable no-unused-expressions */
-describe('ppr.library.utils.request', () => {
-  describe('#getQueryParam', () => {
-    const testParameter = 'testParameter';
-    const testValue = 'testValue';
-    const testUrl = `http://www.google.fi/?${testParameter}=${testValue}`;
-
-    it('should return query parameter', () => {
-      chai.assert.strictEqual(RequestUtils.getQueryParam(testParameter, null, testUrl), testValue);
-    });
-
-    it('should return default parameter', () => {
-      chai.assert.strictEqual(RequestUtils.getQueryParam('wrongParameter', testValue, testUrl), testValue);
+const queryParameterTester = (url, params) => {
+  it('#getQueryParam', () => {
+    _.each(params, (value, key) => {
+      chai.assert.strictEqual(RequestUtils.getQueryParam(key, null, url), value);
     });
   });
 
-  describe('#getQueryParams', () => {
-    const testParameters = {
-      firstTest: 'firstTestingValue',
-      secondTest: 'secondTestingValue',
-    };
+  it('#getQueryParams', () => {
+    chai.assert.deepEqual(RequestUtils.getQueryParams(url), params);
+  });
+};
 
-    const testUrl = `http://www.google.fi/?${$.param(testParameters)}`;
+const testCases = [
+  {
+    url: 'https://www.google.fi',
+    params: {},
+  },
+  {
+    url: 'https://www.google.fi/?test=parameter&blaa=blaa',
+    params: {
+      test: 'parameter',
+      blaa: 'blaa',
+    },
+  },
+  {
+    url: 'https://www.google.fi/?country=Spain#group-1',
+    params: {
+      country: 'Spain',
+    },
+  },
+];
 
-    it('should return list of query parameters', () => {
-      chai.assert.deepEqual(RequestUtils.getQueryParams(testUrl), testParameters);
+describe('ppr.library.utils.request', () => {
+  describe('testCases', () => {
+    _.each(testCases, (testCase) => {
+      queryParameterTester(testCase.url, testCase.params);
     });
+  });
+
+  describe('defaultValue', () => {
+    const defaultValue = 'defaultValue';
+
+    chai.assert.strictEqual(RequestUtils.getQueryParam('wrongParameter', defaultValue, 'https://www.google.fi'), defaultValue);
   });
 });
