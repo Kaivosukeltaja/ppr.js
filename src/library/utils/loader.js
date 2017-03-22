@@ -14,6 +14,7 @@ export default {
    * @returns {Boolean}
    */
   hasAMDSupport() {
+    this.initialize();
     return this.configList.supportAMD === true && typeof define === 'function' && define.amd;
   },
 
@@ -21,7 +22,12 @@ export default {
    * Initialize
    */
   initialize() {
-    this.configList = _.extend(this.configList, Config.get('universal_loader', {}));
+    // Already initialized
+    if (this.isInitialized === true) {
+      return;
+    }
+
+    this.configList = Object.assign(this.configList, Config.get('universal_loader', {}));
 
     // Mark as initialized
     this.isInitialized = true;
