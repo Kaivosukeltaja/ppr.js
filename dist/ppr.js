@@ -1481,7 +1481,7 @@
         var namespace = void 0;
         var name = node.attr('data-component').trim();
 
-        var instanceName = _lodash2.default.replace(_lodash2.default.snakeCase(name), '_', '-');
+        var instanceName = _lodash2.default.snakeCase(name).replace(/_/g, '-');
         var params = {};
 
         // Use custom name if present
@@ -2384,7 +2384,7 @@
 
       // Custom instance required
       if (typeof name !== 'undefined' && name.length > 0) {
-        namespace = 'ppr.page.' + _lodash2.default.replace(_lodash2.default.snakeCase(name.trim()), '_', '-');
+        namespace = 'ppr.page.' + _lodash2.default.snakeCase(name.trim()).replace(/_/g, '-');
       } else {
         name = 'base_prototype';
       }

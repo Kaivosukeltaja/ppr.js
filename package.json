@@ -1,7 +1,7 @@
 {
   "name": "ppr-js",
   "description": "Lightweight javascript library for component functionality",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "repository": {
     "type": "git",
     "url": "https://github.com/Houston-Inc/ppr.js"
