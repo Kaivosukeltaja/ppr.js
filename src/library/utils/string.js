@@ -20,7 +20,7 @@ export default {
 
     for (i = 0, len = targetString.length; i < len; i += 1) {
       chr = targetString.charCodeAt(i);
-      hash = ((hash << 32) - hash) + chr; // eslint-disable-line no-bitwise
+      hash = ((hash << 5) - hash) + chr; // eslint-disable-line no-bitwise
       hash |= 0; // eslint-disable-line no-bitwise
     }
 
