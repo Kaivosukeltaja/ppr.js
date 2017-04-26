@@ -7,7 +7,24 @@ import StringUtils from 'ppr.library.utils.string';
 describe('ppr.library.utils.string', () => {
   describe('#generateHash', () => {
     it('should calculate hash', () => {
-      chai.expect(StringUtils.generateHash('https://www.google.fi')).to.be.a('number');
+      const testResults = [];
+      const testCases = [
+        'https://www.google.com',
+        'https://www.facebook.com',
+        'https://www.twitter.com',
+        'Google',
+        'Facebook',
+        '',
+      ];
+
+      _.each(testCases, (testCase) => {
+        const hash = StringUtils.generateHash(testCase);
+
+        chai.expect(hash).to.be.a('number');
+        chai.expect(testResults).not.include(hash);
+        testResults.push(hash);
+      });
+
       chai.assert.equal(StringUtils.generateHash(''), 0);
     });
   });

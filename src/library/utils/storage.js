@@ -2,13 +2,31 @@ import Config from 'ppr.config';
 
 export default {
 
-  configList: Object.assign({ enabled: true }, Config.get('storage', {})),
+  configList: {
+    enabled: true,
+  },
+
+  isInitialized: false,
+
+  initialize() {
+    // Already initialized
+    if (this.isInitialized === true) {
+      return;
+    }
+
+    // Configure
+    this.configList = Object.assign(this.configList, Config.get('storage'));
+
+    // Mark as initialized
+    this.isInitialized = true;
+  },
 
   /**
    * Check whether storage is enabled
    * @returns {Boolean}
    */
   isEnabled() {
+    this.initialize();
     return this.configList.enabled === true && this.isSupported();
   },
 

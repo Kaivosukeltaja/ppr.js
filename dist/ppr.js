@@ -376,6 +376,20 @@
     return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
   };
 
+  var _extends = Object.assign || function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+
   exports.default = {
 
     isInitialized: false,
@@ -389,6 +403,7 @@
      * @returns {Boolean}
      */
     hasAMDSupport: function hasAMDSupport() {
+      this.initialize();
       return this.configList.supportAMD === true && typeof define === 'function' && define.amd;
     },
 
@@ -397,7 +412,12 @@
      * Initialize
      */
     initialize: function initialize() {
-      this.configList = _lodash2.default.extend(this.configList, _ppr2.default.get('universal_loader', {}));
+      // Already initialized
+      if (this.isInitialized === true) {
+        return;
+      }
+
+      this.configList = _extends(this.configList, _ppr2.default.get('universal_loader', {}));
 
       // Mark as initialized
       this.isInitialized = true;
@@ -589,6 +609,12 @@
       }
 
       var queryString = sourceUrl.substring(searchIndex + 1);
+      var hashIndex = queryString.indexOf('#');
+
+      if (hashIndex > -1) {
+        queryString = queryString.substr(0, hashIndex);
+      }
+
       var queryVariables = queryString.split('&');
 
       _lodash2.default.each(queryVariables, function (parameterString) {
@@ -653,13 +679,32 @@
 
   exports.default = {
 
-    configList: _extends({ enabled: true }, _ppr2.default.get('storage', {})),
+    configList: {
+      enabled: true
+    },
+
+    isInitialized: false,
+
+    initialize: function initialize() {
+      // Already initialized
+      if (this.isInitialized === true) {
+        return;
+      }
+
+      // Configure
+      this.configList = _extends(this.configList, _ppr2.default.get('storage'));
+
+      // Mark as initialized
+      this.isInitialized = true;
+    },
+
 
     /**
      * Check whether storage is enabled
      * @returns {Boolean}
      */
     isEnabled: function isEnabled() {
+      this.initialize();
       return this.configList.enabled === true && this.isSupported();
     },
 
@@ -775,7 +820,7 @@
 
       for (i = 0, len = targetString.length; i < len; i += 1) {
         chr = targetString.charCodeAt(i);
-        hash = (hash << 32) - hash + chr; // eslint-disable-line no-bitwise
+        hash = (hash << 5) - hash + chr; // eslint-disable-line no-bitwise
         hash |= 0; // eslint-disable-line no-bitwise
       }
 
@@ -846,24 +891,22 @@
 });
 (function (global, factory) {
   if (typeof define === "function" && define.amd) {
-    define('ppr.library.utils.window', ['module', 'exports', 'jquery', 'lodash', 'ppr.config'], factory);
+    define('ppr.library.utils.window', ['module', 'exports', 'lodash', 'ppr.config'], factory);
   } else if (typeof exports !== "undefined") {
-    factory(module, exports, require('jquery'), require('lodash'), require('ppr.config'));
+    factory(module, exports, require('lodash'), require('ppr.config'));
   } else {
     var mod = {
       exports: {}
     };
-    factory(mod, mod.exports, global.$, global._, global.pprConfig);
+    factory(mod, mod.exports, global._, global.pprConfig);
     global.pprLibraryUtilsWindow = mod.exports;
   }
-})(this, function (module, exports, _jquery, _lodash, _ppr) {
+})(this, function (module, exports, _lodash, _ppr) {
   'use strict';
 
   Object.defineProperty(exports, "__esModule", {
     value: true
   });
-
-  var _jquery2 = _interopRequireDefault(_jquery);
 
   var _lodash2 = _interopRequireDefault(_lodash);
 
@@ -875,19 +918,50 @@
     };
   }
 
+  var _extends = Object.assign || function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+
   exports.default = {
 
-    configList: _jquery2.default.extend(true, {
+    configList: {
       breakpoints: {},
       mobile_breakpoints: []
-    }, _ppr2.default.get('window', {})),
+    },
 
-    /**
+    isInitialized: false,
+
+    initialize: function initialize() {
+      // Already initialized
+      if (this.isInitialized === true) {
+        return;
+      }
+
+      // Configure
+      this.configList = _extends(this.configList, _ppr2.default.get('window'));
+
+      // Mark as initialized
+      this.isInitialized = true;
+    },
+
+
+    /*
      * Check whether given breakpoint exists
      * @param {string} breakpoint target breakpoint
      * @returns {Boolean}
      */
     isBreakpoint: function isBreakpoint(breakpoint) {
+      this.initialize();
       return typeof this.configList.breakpoints[breakpoint] !== 'undefined';
     },
 
@@ -898,6 +972,8 @@
      */
     isMobile: function isMobile() {
       var _this = this;
+
+      this.initialize();
 
       var isMobile = false;
 
@@ -917,6 +993,8 @@
      * @returns {Boolean}
      */
     matchBreakpoint: function matchBreakpoint(breakpoint) {
+      this.initialize();
+
       // Breakpoint doesn't exist
       if (!this.isBreakpoint(breakpoint)) {
         return false;
@@ -1403,7 +1481,7 @@
         var namespace = void 0;
         var name = node.attr('data-component').trim();
 
-        var instanceName = _lodash2.default.replace(_lodash2.default.snakeCase(name), '_', '-');
+        var instanceName = _lodash2.default.snakeCase(name).replace(/_/g, '-');
         var params = {};
 
         // Use custom name if present
@@ -1686,10 +1764,7 @@
         'data-component-id': this.id
       });
 
-      // Set page data
-      if (this.node.attr('data-component-data')) {
-        this.data = _extends({}, this.data, _pprLibraryUtils2.default.parseJSON(this.node.attr('data-component-data')));
-      }
+      this.setDataFromNode(this.data);
     }
 
     /**
@@ -1768,6 +1843,15 @@
       value: function isBuildable() {
         // eslint-disable-line
         return _jquery2.default.Deferred().resolve().promise();
+      }
+    }, {
+      key: 'setDataFromNode',
+      value: function setDataFromNode() {
+        var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
+        if (this.node.attr('data-component-data')) {
+          this.data = _extends({}, data, _pprLibraryUtils2.default.parseJSON(this.node.attr('data-component-data')));
+        }
       }
     }, {
       key: 'reset',
@@ -1920,12 +2004,17 @@
     }, {
       key: 'onReloadReady',
       value: function onReloadReady(node) {
-        var targetNode = node.filter('*:not(text):not(comment)');
+        var wrappedNode = (0, _jquery2.default)('<div></div>').append(node);
+        var targetNode = wrappedNode.find('[data-component]:first');
 
         this.reset();
 
         // Replace nodes
         this.node.replaceWith(targetNode);
+        this.node = targetNode;
+
+        // Add data
+        this.setDataFromNode({});
 
         // Use existing id
         targetNode.attr('data-component-id', this.id);
@@ -2295,7 +2384,7 @@
 
       // Custom instance required
       if (typeof name !== 'undefined' && name.length > 0) {
-        namespace = 'ppr.page.' + _lodash2.default.replace(_lodash2.default.snakeCase(name.trim()), '_', '-');
+        namespace = 'ppr.page.' + _lodash2.default.snakeCase(name.trim()).replace(/_/g, '-');
       } else {
         name = 'base_prototype';
       }

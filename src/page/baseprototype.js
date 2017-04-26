@@ -47,7 +47,7 @@ export default class BasePrototype {
     let namespace;
     let name = node.attr('data-component').trim();
 
-    const instanceName = _.replace(_.snakeCase(name), '_', '-');
+    const instanceName = _.snakeCase(name).replace(/_/g, '-');
     const params = {};
 
     // Use custom name if present

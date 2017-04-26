@@ -1,20 +1,35 @@
-import $ from 'jquery';
 import _ from 'lodash';
 import Config from 'ppr.config';
 
 export default {
 
-  configList: $.extend(true, {
+  configList: {
     breakpoints: {},
     mobile_breakpoints: [],
-  }, Config.get('window', {})),
+  },
 
-  /**
+  isInitialized: false,
+
+  initialize() {
+    // Already initialized
+    if (this.isInitialized === true) {
+      return;
+    }
+
+    // Configure
+    this.configList = Object.assign(this.configList, Config.get('window'));
+
+    // Mark as initialized
+    this.isInitialized = true;
+  },
+
+  /*
    * Check whether given breakpoint exists
    * @param {string} breakpoint target breakpoint
    * @returns {Boolean}
    */
   isBreakpoint(breakpoint) {
+    this.initialize();
     return typeof this.configList.breakpoints[breakpoint] !== 'undefined';
   },
 
@@ -23,6 +38,8 @@ export default {
    * @returns {Boolean}
    */
   isMobile() {
+    this.initialize();
+
     let isMobile = false;
 
     _.each(this.configList.mobile_breakpoints, (breakpoint) => {
@@ -40,6 +57,8 @@ export default {
    * @returns {Boolean}
    */
   matchBreakpoint(breakpoint) {
+    this.initialize();
+
     // Breakpoint doesn't exist
     if (!this.isBreakpoint(breakpoint)) {
       return false;

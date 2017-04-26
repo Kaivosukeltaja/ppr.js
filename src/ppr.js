@@ -24,7 +24,7 @@ export default {
 
     // Custom instance required
     if (typeof name !== 'undefined' && name.length > 0) {
-      namespace = `ppr.page.${_.replace(_.snakeCase(name.trim()), '_', '-')}`;
+      namespace = `ppr.page.${_.snakeCase(name.trim()).replace(/_/g, '-')}`;
     } else {
       name = 'base_prototype';
     }
