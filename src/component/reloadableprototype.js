@@ -51,6 +51,13 @@ export default class ReloadablePrototype extends BasePrototype {
 
     this.reset();
 
+    const childIds = this.node.find('[data-component-id]').map((index, element) => $(element).attr('data-component-id'));
+
+    // Remove child components
+    if (childIds.length > 0) {
+      this.eventBus.publish('remove_component', childIds);
+    }
+
     // Replace nodes
     this.node.replaceWith(targetNode);
     this.node = targetNode;

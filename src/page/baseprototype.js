@@ -109,12 +109,14 @@ export default class BasePrototype {
         // Wait until instance is buildable
         instance.isBuildable().then((data) => {
           if (instance.build(data) === false) {
-            delete this.components[params.id];
-            node.remove();
+            this.removeComponent(params.id);
             return;
           }
 
           instance.afterBuild();
+
+          // Build child components
+          this.buildComponents(node);
         });
       });
     });
@@ -126,7 +128,9 @@ export default class BasePrototype {
    * Build all components in container node
    */
   buildComponents(node) {
-    node.find('[data-component]').each((index, element) => this.eventBus.publish('build_component', $(element)));
+    const componentNodes = node.find('[data-component]');
+    const childNodes = node.find('[data-component] [data-component]');
+    componentNodes.not(childNodes).each((index, element) => this.eventBus.publish('build_component', $(element)));
   }
 
   /**
