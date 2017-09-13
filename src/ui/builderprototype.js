@@ -10,13 +10,16 @@ export default class BuilderPrototype {
    * Initialize builder
    * @returns {Boolean}
    */
-  static initialize() {
+  static initialize(page) {
     if (!this.shouldBuild()) {
       return false;
     }
 
     const targetDependencies = this.getDependencies();
     const instance = new this();
+
+    // Remember page
+    instance.page = page;
 
     UniversalLoader.load(targetDependencies, (...dependencies) => {
       instance.build(...dependencies);
