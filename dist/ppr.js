@@ -1548,7 +1548,8 @@
           _this.components[params.id] = instance;
 
           // Map required modules to namespaces
-          var modulePromises = instance.getRequiredModules().map(function (moduleName) {
+          var moduleNames = instance.getRequiredModules();
+          var modulePromises = moduleNames.map(function (moduleName) {
             return _this.getModule(moduleName);
           });
 
@@ -1556,8 +1557,8 @@
             var messages = {};
 
             // Initialize modules
-            _lodash2.default.each(modules, function (module) {
-              var moduleName = module.name.toLowerCase();
+            _lodash2.default.each(modules, function (module, key) {
+              var moduleName = moduleNames[key].toLowerCase();
               messages[moduleName] = module.getMessages();
             });
 

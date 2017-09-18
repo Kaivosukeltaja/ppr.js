@@ -92,14 +92,15 @@ export default class BasePrototype {
       this.components[params.id] = instance;
 
       // Map required modules to namespaces
-      const modulePromises = instance.getRequiredModules().map(moduleName => this.getModule(moduleName));
+      const moduleNames = instance.getRequiredModules();
+      const modulePromises = moduleNames.map(moduleName => this.getModule(moduleName));
 
       Promise.all(modulePromises).then((modules) => {
         const messages = {};
 
         // Initialize modules
-        _.each(modules, (module) => {
-          const moduleName = module.name.toLowerCase();
+        _.each(modules, (module, key) => {
+          const moduleName = moduleNames[key].toLowerCase();
           messages[moduleName] = module.getMessages();
         });
 
