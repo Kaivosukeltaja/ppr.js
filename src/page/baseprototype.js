@@ -13,6 +13,7 @@ export default class BasePrototype {
     this.data = null;
     this.eventBus = new EventBusPrototype();
     this.components = {};
+    this.modulePromises = {};
     this.cacheComponentReady = [];
 
     // Set page data
@@ -91,17 +92,16 @@ export default class BasePrototype {
       this.components[params.id] = instance;
 
       // Map required modules to namespaces
-      const requiredModuleNames = instance.getRequiredModules();
-      const requiredModules = _.map(requiredModuleNames, ns => `ppr.module.${ns}`);
+      const moduleNames = instance.getRequiredModules();
+      const modulePromises = moduleNames.map(moduleName => this.getModule(moduleName));
 
-      // Load modules
-      UniversalLoader.load(requiredModules, (...modules) => {
+      Promise.all(modulePromises).then((modules) => {
         const messages = {};
 
         // Initialize modules
-        _.each(modules, (module, index) => {
-          module.initialize({}, this.eventBus);
-          messages[requiredModuleNames[index]] = module.getMessages();
+        _.each(modules, (module, key) => {
+          const moduleName = moduleNames[key].toLowerCase();
+          messages[moduleName] = module.getMessages();
         });
 
         instance.setModuleMessages(messages);
@@ -109,12 +109,14 @@ export default class BasePrototype {
         // Wait until instance is buildable
         instance.isBuildable().then((data) => {
           if (instance.build(data) === false) {
-            delete this.components[params.id];
-            node.remove();
+            this.removeComponent(params.id);
             return;
           }
 
           instance.afterBuild();
+
+          // Build child components
+          this.buildComponents(node);
         });
       });
     });
@@ -126,7 +128,9 @@ export default class BasePrototype {
    * Build all components in container node
    */
   buildComponents(node) {
-    node.find('[data-component]').each((index, element) => this.eventBus.publish('build_component', $(element)));
+    const componentNodes = node.find('[data-component]');
+    const childNodes = node.find('[data-component] [data-component]');
+    componentNodes.not(childNodes).each((index, element) => this.eventBus.publish('build_component', $(element)));
   }
 
   /**
@@ -135,7 +139,7 @@ export default class BasePrototype {
   buildUIExtensions() { // eslint-disable-line
     UniversalLoader.load(Config.get('ui.builders', []), (...builders) => {
       _.each(builders, (builder) => {
-        builder.initialize();
+        builder.initialize(this);
       });
     });
   }
@@ -148,6 +152,32 @@ export default class BasePrototype {
   getComponent(id) {
     return typeof this.components[id] !== 'undefined' ?
       this.components[id] : null;
+  }
+
+  /**
+   * Get module by name
+   * @param {string} name name of module
+   * @returns {Object}
+   */
+  getModule(name) {
+    if (Object.prototype.hasOwnProperty.call(this.modulePromises, name)) {
+      return this.modulePromises[name];
+    }
+
+    const modulePromise = new Promise((resolve) => { // eslint-disable-line
+      const requireName = `ppr.module.${name}`;
+
+      // Load module
+      UniversalLoader.load(requireName, (module) => {
+        module.initialize({}, this.eventBus);
+
+        return resolve(module);
+      });
+    });
+
+    this.modulePromises[name] = modulePromise;
+
+    return modulePromise;
   }
 
   /**

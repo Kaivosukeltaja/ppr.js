@@ -967,6 +967,26 @@
 
 
     /**
+     * Check whether given element is in viewport
+     * @param {object} element HTML node
+     * @return {Boolean} is in viewport
+     */
+    isElementInViewport: function isElementInViewport(element) {
+      var el = element;
+
+      // Support for jQuery node
+      if (el instanceof $) {
+        el = el[0];
+      }
+
+      var rect = el.getBoundingClientRect();
+      var viewportHeight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+
+      return rect.top >= -100 && rect.bottom <= viewportHeight + 100;
+    },
+
+
+    /**
      * Check whether current window matches to mobile breakpoint
      * @returns {Boolean}
      */
@@ -1446,6 +1466,7 @@
       this.data = null;
       this.eventBus = new _pprLibrary2.default();
       this.components = {};
+      this.modulePromises = {};
       this.cacheComponentReady = [];
 
       // Set page data
@@ -1527,23 +1548,18 @@
           _this.components[params.id] = instance;
 
           // Map required modules to namespaces
-          var requiredModuleNames = instance.getRequiredModules();
-          var requiredModules = _lodash2.default.map(requiredModuleNames, function (ns) {
-            return 'ppr.module.' + ns;
+          var moduleNames = instance.getRequiredModules();
+          var modulePromises = moduleNames.map(function (moduleName) {
+            return _this.getModule(moduleName);
           });
 
-          // Load modules
-          _pprLibraryUtils4.default.load(requiredModules, function () {
-            for (var _len = arguments.length, modules = Array(_len), _key = 0; _key < _len; _key++) {
-              modules[_key] = arguments[_key];
-            }
-
+          Promise.all(modulePromises).then(function (modules) {
             var messages = {};
 
             // Initialize modules
-            _lodash2.default.each(modules, function (module, index) {
-              module.initialize({}, _this.eventBus);
-              messages[requiredModuleNames[index]] = module.getMessages();
+            _lodash2.default.each(modules, function (module, key) {
+              var moduleName = moduleNames[key].toLowerCase();
+              messages[moduleName] = module.getMessages();
             });
 
             instance.setModuleMessages(messages);
@@ -1551,12 +1567,14 @@
             // Wait until instance is buildable
             instance.isBuildable().then(function (data) {
               if (instance.build(data) === false) {
-                delete _this.components[params.id];
-                node.remove();
+                _this.removeComponent(params.id);
                 return;
               }
 
               instance.afterBuild();
+
+              // Build child components
+              _this.buildComponents(node);
             });
           });
         });
@@ -1568,21 +1586,25 @@
       value: function buildComponents(node) {
         var _this2 = this;
 
-        node.find('[data-component]').each(function (index, element) {
+        var componentNodes = node.find('[data-component]');
+        var childNodes = node.find('[data-component] [data-component]');
+        componentNodes.not(childNodes).each(function (index, element) {
           return _this2.eventBus.publish('build_component', (0, _jquery2.default)(element));
         });
       }
     }, {
       key: 'buildUIExtensions',
       value: function buildUIExtensions() {
+        var _this3 = this;
+
         // eslint-disable-line
         _pprLibraryUtils4.default.load(_ppr2.default.get('ui.builders', []), function () {
-          for (var _len2 = arguments.length, builders = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
-            builders[_key2] = arguments[_key2];
+          for (var _len = arguments.length, builders = Array(_len), _key = 0; _key < _len; _key++) {
+            builders[_key] = arguments[_key];
           }
 
           _lodash2.default.each(builders, function (builder) {
-            builder.initialize();
+            builder.initialize(_this3);
           });
         });
       }
@@ -1590,6 +1612,31 @@
       key: 'getComponent',
       value: function getComponent(id) {
         return typeof this.components[id] !== 'undefined' ? this.components[id] : null;
+      }
+    }, {
+      key: 'getModule',
+      value: function getModule(name) {
+        var _this4 = this;
+
+        if (Object.prototype.hasOwnProperty.call(this.modulePromises, name)) {
+          return this.modulePromises[name];
+        }
+
+        var modulePromise = new Promise(function (resolve) {
+          // eslint-disable-line
+          var requireName = 'ppr.module.' + name;
+
+          // Load module
+          _pprLibraryUtils4.default.load(requireName, function (module) {
+            module.initialize({}, _this4.eventBus);
+
+            return resolve(module);
+          });
+        });
+
+        this.modulePromises[name] = modulePromise;
+
+        return modulePromise;
       }
     }, {
       key: 'onComponentBuildFinished',
@@ -1604,7 +1651,7 @@
     }, {
       key: 'removeComponent',
       value: function removeComponent(ids) {
-        var _this3 = this;
+        var _this5 = this;
 
         var targetIds = ids;
 
@@ -1613,13 +1660,13 @@
         }
 
         _lodash2.default.each(targetIds, function (id) {
-          var componentInstance = _this3.components[id];
+          var componentInstance = _this5.components[id];
 
           // Remove references
           if (typeof componentInstance !== 'undefined') {
             componentInstance.reset();
             componentInstance.node.remove();
-            delete _this3.components[id];
+            delete _this5.components[id];
           }
         });
       }
@@ -2009,6 +2056,15 @@
 
         this.reset();
 
+        var childIds = this.node.find('[data-component-id]').map(function (index, element) {
+          return (0, _jquery2.default)(element).attr('data-component-id');
+        });
+
+        // Remove child components
+        if (childIds.length > 0) {
+          this.eventBus.publish('remove_component', childIds);
+        }
+
         // Replace nodes
         this.node.replaceWith(targetNode);
         this.node = targetNode;
@@ -2261,13 +2317,16 @@
       }
     }], [{
       key: 'initialize',
-      value: function initialize() {
+      value: function initialize(page) {
         if (!this.shouldBuild()) {
           return false;
         }
 
         var targetDependencies = this.getDependencies();
         var instance = new this();
+
+        // Remember page
+        instance.page = page;
 
         _pprLibraryUtils2.default.load(targetDependencies, function () {
           instance.build.apply(instance, arguments);

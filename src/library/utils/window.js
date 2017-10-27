@@ -1,6 +1,8 @@
 import _ from 'lodash';
 import Config from 'ppr.config';
 
+/* globals $ */
+
 export default {
 
   configList: {
@@ -31,6 +33,28 @@ export default {
   isBreakpoint(breakpoint) {
     this.initialize();
     return typeof this.configList.breakpoints[breakpoint] !== 'undefined';
+  },
+
+  /**
+   * Check whether given element is in viewport
+   * @param {object} element HTML node
+   * @return {Boolean} is in viewport
+   */
+  isElementInViewport(element) {
+    let el = element;
+
+    // Support for jQuery node
+    if (el instanceof $) {
+      el = el[0];
+    }
+
+    const rect = el.getBoundingClientRect();
+    const viewportHeight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+
+    return (
+        rect.top >= -100 &&
+        rect.bottom <= viewportHeight + 100
+    );
   },
 
   /**
