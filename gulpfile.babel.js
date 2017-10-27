@@ -6,6 +6,7 @@ import eslint from 'gulp-eslint';
 import uglify from 'gulp-uglify';
 import watch from 'gulp-watch';
 import order from 'gulp-order';
+import webserver from 'gulp-webserver';
 import _ from 'lodash';
 
 const KarmaServer = karma.Server;
@@ -85,6 +86,17 @@ gulp.task('test:watch', (done) => {
     sourceList: OrderedFileList,
   }, done).start();
 });
+
+gulp.task('serve', () => {
+  gulp.src('.')
+    .pipe(webserver({
+      host: 'localhost',
+      port: 8000,
+      livereload: true,
+      directoryListing: false,
+    }));
+});
+
 
 gulp.task('watch', () => {
   watch(['src/**/*.js'], () => gulp.start('build:dev'));
